@@ -139,7 +139,7 @@ Breakpoint 1 at <span style="color:green">0x80200000</span>: file kern/init/entr
 我们在`kern_init`处设置第二个断点，命令为`break kern_init`。得到的输出如下：
 
 <pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
-Breakpoint 2 at <span style="color:green">0x80200000</span>: file kern/init/init.c, line 8.
+Breakpoint 2 at <span style="color:green">0x8020000a</span>: file kern/init/init.c, line 8.
 </pre>
 
 可以看到指向了之前显示为`kern_init`的地址`0x80200000`。
@@ -189,6 +189,7 @@ End of assembler dump.
 - `ld a1,32(t0)`：从内存地址`t0 + 32 = 0x1000 + 32 = 0x1020`处加载双字到`a1`寄存器。
 - `ld t0,24(t0)`：从内存地址`t0 + 24 = 0x1000 + 24 = 0x1018`处加载双字到`t0`寄存器。
 - `jr t0 `：跳转到`t0`寄存器指向的`0x80000000`执行。
+它们负责完成 OpenSBI 的初始引导工作：获取当前 CPU 核心 ID，准备设备树地址和其他启动参数，加载 OpenSBI 主入口地址，跳转到 OpenSBI 主初始化代码。
 
 ## 知识点梳理
 
