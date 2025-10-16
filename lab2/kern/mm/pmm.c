@@ -34,7 +34,7 @@ static void check_alloc_page(void);
 
 // init_pmm_manager - initialize a pmm_manager instance
 static void init_pmm_manager(void) {
-    pmm_manager = &best_fit_pmm_manager;
+    pmm_manager = &best_fit_pmm_manager; //默认是default，这里要改成best fit
     cprintf("memory management: %s\n", pmm_manager->name);
     pmm_manager->init();
 }
