@@ -6,13 +6,13 @@
 
 ### 主要思想
 
-First Fit 算法的核心思想是，当需要分配一个资源请求时，它会从内存或存储空间的起始地址开始，顺序遍历空闲区域列表，并选择所遇到的**第一个**大小满足该请求的空闲块进行分配，而不会继续寻找后续可能存在的、大小更吻合的空闲块。
+`First Fit` 算法的核心思想是，当需要分配一个资源请求时，它会从内存或存储空间的起始地址开始，顺序遍历空闲区域列表，并选择所遇到的**第一个**大小满足该请求的空闲块进行分配，而不会继续寻找后续可能存在的、大小更吻合的空闲块。
 
-First Fit 算法以实现简单和分配速度快为主要优点，因为它通常无需遍历整个列表；但其代价是容易在内存的低地址部分留下大量难以利用的小碎片，从而可能降低内存的长期利用率。
+`First Fit `算法以实现简单和分配速度快为主要优点，因为它通常无需遍历整个列表；但其代价是容易在内存的低地址部分留下大量难以利用的小碎片，从而可能降低内存的长期利用率。
 
 ### 具体实现
 
-在操作系统中实现 First Fit 算法的核心是**维护一个按地址排序的空闲内存块链表**。当收到内存请求时，算法从链表头部开始顺序遍历，找到**第一个**大小满足需求的空闲块：若大小正好匹配，则将该节点从链表中移除；若该空闲块更大，则将其分割，仅分配请求大小的部分，并将剩余部分作为新空闲块更新回链表。
+在操作系统中实现 `First Fit` 算法的核心是**维护一个按地址排序的空闲内存块链表**。当收到内存请求时，算法从链表头部开始顺序遍历，找到**第一个**大小满足需求的空闲块：若大小正好匹配，则将该节点从链表中移除；若该空闲块更大，则将其分割，仅分配请求大小的部分，并将剩余部分作为新空闲块更新回链表。
 
 ### 相关代码分析
 
@@ -44,16 +44,16 @@ default_init(void) {
 }
 </pre>
 
-该函数用于初始化双向链表的头节点和空闲页面计数器。函数调用`list_init`函数初始化了一个空的双向链表`free_list`，然后定义了`nr_free = 0`，也就是将空闲块的个数定义为0。
+该函数用于初始化双向链表的头节点和空闲页面计数器。函数调用`list_init`函数初始化了一个空的双向链表`free_list`，然后定义了`nr_free = 0`，也就是将空闲块的个数定义为`0`。
 
 #### 初始化函数 default_init_memmap
 
 <pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
 static void
 default_init_memmap(struct Page *base, size_t n) {
-    assert(n > 0);                      //确保要初始化的页面数量大于0
-    struct Page *p = base;              //创建遍历指针p，指向起始页面
-    for (; p != base + n; p ++) {       //base + n 是指针运算，表示从 base 开始向后移动 n 个 struct Page 的位置，循环会遍历从 base 到 base + n - 1 的所有页面
+    assert(n > 0);                     //确保要初始化的页面数量大于0
+    struct Page *p = base;             //创建遍历指针p，指向起始页面
+    for (; p != base + n; p ++) {      //base + n 是指针运算，表示从 base 开始向后移动 n 个 struct Page 的位置，循环会遍历从 base 到 base + n - 1 的所有页面
         assert(PageReserved(p));       //检查页面是否被标记为"保留"状态
         p->flags = p->property = 0;    //将页面的所有标志位和属性清零
         set_page_ref(p, 0);            //将页面的引用次数设为0
@@ -80,9 +80,9 @@ default_init_memmap(struct Page *base, size_t n) {
 
 该函数的作用为：初始化一段连续的物理内存页面，将其标记为空闲状态，并加入到空闲内存管理链表中。
 
-函数首先对一段连续的物理内存页面进行初始化准备：它遍历从起始页面base开始的n个连续页面，确保每个页面都处于保留状态，然后清除所有页面的标志位和属性值，并将引用计数设为0，表示这些页面当前未被使用且处于干净状态。
+函数首先对一段连续的物理内存页面进行初始化准备：它遍历从起始页面`base`开始的`n`个连续页面，确保每个页面都处于保留状态，然后清除所有页面的标志位和属性值，并将引用计数设为`0`，表示这些页面当前未被使用且处于干净状态。
 
-接下来函数将这段连续页面组织成一个完整的空闲内存块：仅在起始页面base中设置property属性为n来记录整个块的大小，并标记该页面为块头页面，而其他页面保持普通页面状态。同时更新全局空闲页面计数器nr_free，增加n个页面的计数。
+接下来函数将这段连续页面组织成一个完整的空闲内存块：仅在起始页面`base`中设置`property`属性为`n`来记录整个块的大小，并标记该页面为块头页面，而其他页面保持普通页面状态。同时更新全局空闲页面计数器`nr_free`，增加`n`个页面的计数。
 
 最后函数将这个新初始化的空闲块按物理地址顺序插入到空闲链表中：如果链表为空则直接插入；否则遍历链表，找到第一个地址比当前块大的位置并在其前面插入，或者如果当前块地址最大则插入到链表末尾，确保链表始终按地址从小到大排序，为后续的内存合并操作奠定基础。
 
@@ -122,11 +122,11 @@ default_alloc_pages(size_t n) {           //参数为请求分配的连续页面
 
 该函数的作用为：使用首次适应算法从空闲链表中分配指定数量的连续物理页面。
 
-函数首先验证请求的页面数量有效性，并快速检查系统总空闲页面是否足够。接着使用首次适应算法遍历按地址排序的空闲链表，寻找第一个大小满足需求的空闲内存块，通过le2page宏将链表节点转换为页面结构体指针进行比较，找到后立即停止搜索。
+函数首先验证请求的页面数量有效性，并快速检查系统总空闲页面是否足够。接着使用首次适应算法遍历按地址排序的空闲链表，寻找第一个大小满足需求的空闲内存块，通过`le2page`宏将链表节点转换为页面结构体指针进行比较，找到后立即停止搜索。
 
 找到合适空闲块后，函数记录其前驱节点位置并将其从链表中移除。如果该空闲块大小大于请求数量，则进行分割处理：计算剩余部分的起始页面，设置其大小属性并标记为新的空闲块头页面，然后将剩余部分插入到原位置的前驱节点后，保持链表有序性。
 
-最后函数更新全局空闲页面计数器，减少已分配的页面数量，并清除分配块的头页面标志位，表明该页面已被分配使用。最终返回分配的内存块起始页面指针，完成整个分配流程，若搜索阶段未找到合适块则直接返回NULL表示分配失败。
+最后函数更新全局空闲页面计数器，减少已分配的页面数量，并清除分配块的头页面标志位，表明该页面已被分配使用。最终返回分配的内存块起始页面指针，完成整个分配流程，若搜索阶段未找到合适块则直接返回`NULL`表示分配失败。
 
 #### 内存释放函数 default_free_pages
 
@@ -201,7 +201,7 @@ default_nr_free_pages(void) {
 }
 </pre>
 
-这是一个简单的获取器函数，用于获取当前系统中可用的空闲物理页面总数。它直接返回全局变量`nr_free`的值，该变量在内存分配时减少、在内存释放时增加，为其他系统组件提供了一种快速查询内存剩余情况的方法，无需遍历复杂的空闲链表结构，具有O(1)的时间复杂度。
+这是一个简单的获取器函数，用于获取当前系统中可用的空闲物理页面总数。它直接返回全局变量`nr_free`的值，该变量在内存分配时减少、在内存释放时增加，为其他系统组件提供了一种快速查询内存剩余情况的方法，无需遍历复杂的空闲链表结构，具有`O(1)`的时间复杂度。
 
 #### 测试函数 basic_check()
 
@@ -351,23 +351,23 @@ const struct pmm_manager default_pmm_manager = {
 };
 </pre>
 
-default_pmm_manager 结构体是物理内存管理器的核心接口，它封装了完整的首次适应算法实现，提供了标准化的内存管理接口，支持系统启动自检和状态监控，为上层系统组件提供稳定的内存服务，具有良好的可扩展性和可维护性。
+`default_pmm_manager` 结构体是物理内存管理器的核心接口，它封装了完整的首次适应算法实现，提供了标准化的内存管理接口，支持系统启动自检和状态监控，为上层系统组件提供稳定的内存服务，具有良好的可扩展性和可维护性。
 
 ### 各函数作用分析
 
-- **default_init**：初始化空闲内存块的链表，将空闲块的个数设置为0。
-- **default_init_memmap**：用于初始化一个空闲内存块。先查询空闲内存块的链表，按照地址顺序插入到合适的位置，并将空闲内存块个数加n。
-- **default_alloc_pages**：用于分配给定大小的内存块。如果剩余空闲内存块数量多于所需的内存区块数量，则从链表中查找大小超过所需大小的页，并更新该页剩余的大小。
-- **default_free_pages**：用于释放内存块。将释放的内存块按照顺序插入到空闲内存块的链表中，并合并与之相邻且连续的空闲内存块。
-- **default_nr_free_pages**：用于获取当前的空闲页面的数量。
-- **basic_check**：基本功能检测。
-- **default_check**：进阶功能检测。
-- **结构体default_pmm_manager**：方便后续的调用，将上述功能包装为结构体。
+- **`default_init`**：初始化空闲内存块的链表，将空闲块的个数设置为`0`。
+- **`default_init_memmap`**：用于初始化一个空闲内存块。先查询空闲内存块的链表，按照地址顺序插入到合适的位置，并将空闲内存块个数加`n`。
+- **`default_alloc_pages`**：用于分配给定大小的内存块。如果剩余空闲内存块数量多于所需的内存区块数量，则从链表中查找大小超过所需大小的页，并更新该页剩余的大小。
+- **`default_free_pages`**：用于释放内存块。将释放的内存块按照顺序插入到空闲内存块的链表中，并合并与之相邻且连续的空闲内存块。
+- **`default_nr_free_pages`**：用于获取当前的空闲页面的数量。
+- **`basic_check`**：基本功能检测。
+- **`default_check`**：进阶功能检测。
+- **结构体`default_pmm_manager`**：方便后续的调用，将上述功能包装为结构体。
 
 ### First Fit 算法改进空间
 
 - **引入块大小分类管理**：可以将空闲块按大小范围划分到不同的链表中进行管理，这样能减少搜索时间，优化了小块分配的效率，同时保持大块分配的灵活性。
-- **实现Next Fit分配策略**：针对当前First Fit算法总是从链表头开始搜索导致低地址碎片集中的问题，可以改为Next Fit算法，这样可以避免低地址区域产生大量无法使用的小碎片。
+- **实现`Next Fit`分配策略**：针对当前`First Fit`算法总是从链表头开始搜索导致低地址碎片集中的问题，可以改为`Next Fit`算法，这样可以避免低地址区域产生大量无法使用的小碎片。
 - **建立分割阈值机制**：当前实现无条件分割大块内存，容易产生很多过小的碎片。可以引入最小分割阈值概念，只有当分割后的剩余块大小超过某个阈值时才执行分割操作。
 - **采用延迟合并策略**：现有的立即合并策略在频繁分配释放场景下会带来一定的的性能开销。可以改为延迟合并机制，等到空闲块数量积累到一定阈值或系统空闲时再执行批量合并操作。
 - **添加内存碎片监控与整理**：可以增加碎片度监控机制，定期评估内存碎片化程度，当碎片超过阈值时触发主动整理操作。
@@ -379,11 +379,11 @@ default_pmm_manager 结构体是物理内存管理器的核心接口，它封装
 
 ### 主要思想
 
-Buddy System 的核心目标是在内存分配和释放过程中减少外部碎片，同时保持较高的分配与合并效率。这是一种用于动态内存管理的高效算法，常用于操作系统内核中管理物理内存。
+`Buddy System `的核心目标是在内存分配和释放过程中减少外部碎片，同时保持较高的分配与合并效率。这是一种用于动态内存管理的高效算法，常用于操作系统内核中管理物理内存。
 
 #### 分配策略
 
-将内存划分为大小为**2 的幂次**的块（如 1K, 2K, 4K, ...），当请求分配一定大小的内存时，系统会向上取整到**最近的 2 的幂次大小**，然后在该大小的空闲块链表中查找：
+将内存划分为大小为**`2` 的幂次**的块（如 `1K, 2K, 4K, ...`），当请求分配一定大小的内存时，系统会向上取整到**最近的` 2` 的幂次大小**，然后在该大小的空闲块链表中查找：
 
 - 如果有空闲块，则直接分配；
 
@@ -399,7 +399,442 @@ Buddy System 的核心目标是在内存分配和释放过程中减少外部碎�
 
 ### 设计文档
 
+#### 数据结构分析
+
+输入`make qemu`后，我们可以从启动信息中得到下面的信息：
+
+<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+DTB Address: 0x82200000
+Physical Memory from DTB:
+  Base: 0x0000000080000000
+  Size: 0x0000000008000000 (128 MB)
+  End:  0x0000000087ffffff
+</pre>
+
+总内存大小: `128 MB = 128 × 1024 × 1024 = 134,217,728` 字节
+
+页面大小: 通常为 `4 KB = 4096` 字节
+
+总页数 = 总内存大小 / 页面大小 = `134,217,728 / 4,096 = 32,768` 页
+
+又因为 `32,768页 = 2^15`页，所以定义最大阶数为`15`（实际上从结果来看，初始空闲页数为`16384`，正好是`32768`的一半，这表明并非所有物理内存都可用于分配，在`ucore`中，有大约一半的内存被系统保留使用），于是我们设计如下的数据结构：
+
+<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+// 根据128MB内存计算最大阶数：32,768页 = 2^15页
+#define MAX_ORDER 15
+#define BUDDY_ARRAY_SIZE (MAX_ORDER + 1)
+
+typedef struct {
+    unsigned int max_order;           // 实际最大块的大小
+    list_entry_t free_array[MAX_ORDER + 1]; // 伙伴堆数组
+    unsigned int nr_free;             // 伙伴系统中剩余的空闲块
+} buddy_system_t;
+</pre>
+
+`free_array`的每个阶数都对应一个空闲链表，阶数`i`的链表包含大小为`2^i`页的空闲块。`nr_free`为总空闲页数，用于快速判断是否有足够内存。
+
+#### 相关辅助函数
+
+在`buddy_system`的实现过程中，我们用到了以下的辅助函数：
+
+<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+// 基础函数实现
+static bool IS_POWER_OF_2(size_t n) {  //判断是不是2的次幂
+    return (n != 0) && ((n & (n - 1)) == 0);
+}
+
+static unsigned int Get_Order_Of_2(size_t n) {  //返回一个数对应的次幂
+    unsigned int order = 0;
+    while (n > 1) {
+        n >>= 1;
+        order++;
+    }
+    return order;
+}
+
+static size_t Find_The_Small_2(size_t n) {  //找到小于等于n的最大2的次幂
+    if (n == 0) return 1;
+    size_t power = 1;
+    while (power <= n) {
+        power <<= 1;
+    }
+    return power >> 1;
+}
+
+static size_t Find_The_Big_2(size_t n) {  //找到大于等于n的最小2的次幂
+    if (n == 0) return 1;
+    size_t power = 1;
+    while (power < n) {
+        power <<= 1;
+    }
+    return power;
+}
+</pre>
+
+<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+// 获得伙伴块地址
+static struct Page* get_buddy(struct Page* page, unsigned int order) {
+    if (order >= MAX_ORDER) return NULL;
+
+    size_t page_idx = page - pages;  //将Page指针转换为页面索引
+    size_t buddy_idx = page_idx ^ (1 << order);  //使用异或运算计算伙伴索引（对于order=k的块，其伙伴块就在第k位不同）
+
+    if (buddy_idx >= npage) {  //检查伙伴索引是否超出物理内存范围
+        return NULL;
+    }
+    return &pages[buddy_idx];
+}
+
+// 显示伙伴系统各阶链表的当前状态
+static void show_buddy_array(unsigned int start_order, unsigned int end_order) {
+    cprintf("Buddy System Status (Total free: %u pages):\n", buddy_sys.nr_free);
+    for (unsigned int i = start_order; i <= end_order && i <= MAX_ORDER; i++) {
+        cprintf("Order %2d (size: %5u pages): ", i, (1u << i));
+        if (list_empty(&buddy_sys.free_array[i])) {
+            cprintf("empty\n");
+        }
+        else {
+            int count = 0;
+            list_entry_t* le = &buddy_sys.free_array[i];  //链表头
+            list_entry_t* temp = le->next;                //下一个节点
+            while (temp != le) {                          //直到回到链表头
+                count++;
+                temp = temp->next;
+            }
+            cprintf("%d blocks\n", count);
+        }
+    }
+}
+</pre>
+
+`get_buddy`函数通过巧妙的异或运算计算给定页面在指定阶数下的伙伴块地址，利用页面索引与`2`的`order`次方进行异或来翻转对应位以定位伙伴位置，并验证伙伴索引的有效性；而`show_buddy_array`函数则用于诊断显示伙伴系统的状态，它遍历指定范围内的各阶空闲链表，统计并输出每个阶数对应的空闲块数量，从而提供系统内存分布的可视化信息。
+
+#### 初始化函数
+
+<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+// 初始化Buddy System
+static void buddy_system_init(void) {
+    buddy_sys.max_order = 0;  //设置当前最大阶数为0
+    buddy_sys.nr_free = 0;    //初始化空闲页数为0
+
+    for (unsigned int i = 0; i <= MAX_ORDER; i++) {
+        list_init(&buddy_sys.free_array[i]);  //初始化所有阶数的空闲链表，等待buddy_system_init_memmap添加实际内存
+    }
+    cprintf("buddy_system: initialized with max_order=%d\n", MAX_ORDER);
+}
+
+// 初始化内存映射：将一段连续的物理内存页面初始化为伙伴系统的可用内存
+static void buddy_system_init_memmap(struct Page* base, size_t n) {  //base是内存区域的起始页面指针，n是连续页面的数量
+    assert(n > 0);
+    cprintf("buddy_system_init_memmap: base=%p, n=%u\n", base, (unsigned int)n);
+
+    // 初始化所有页面
+    for (struct Page* p = base; p != base + n; p++) {
+        assert(PageReserved(p));     // 确保页面原本是保留状态
+        p->flags = p->property = 0;  // 清空标志位和属性
+        set_page_ref(p, 0);          // 引用计数设为0
+        SetPageProperty(p);          // 标记为属性页（用于伙伴系统
+        SetPageReserved(p);          //保持保留状态
+    }
+
+    // 找到适合的最大块（不超过MAX_ORDER）
+    size_t total_pages = n;
+    unsigned int order = 0;
+    size_t block_size = 1;
+
+    while (order < MAX_ORDER && (block_size << 1) <= total_pages) { //寻找不超过n的最大2的幂次
+        order++;
+        block_size <<= 1;
+    }
+
+    buddy_sys.max_order = order;
+
+    // 将整个内存区域作为一个大块加入对应阶的链表
+    base->property = order;  // 设置块的阶数
+    SetPageProperty(base);   // 标记为属性页
+    list_add(&buddy_sys.free_array[order], &(base->page_link));  // 加入对应链表
+    buddy_sys.nr_free += block_size;  // 更新总空闲页数
+
+    cprintf("buddy_system: added memory block of order %u (%u pages), total free: %u\n",
+        order, (unsigned int)block_size, buddy_sys.nr_free);
+}
+</pre>
+
+这两个函数共同完成了伙伴系统的初始化工作：`buddy_system_init`负责初始化系统结构，设置最大阶数和空闲页数为零，并初始化所有阶数的空闲链表；而`buddy_system_init_memmap`则将一段连续的物理内存页面初始化为伙伴系统的可用内存，通过寻找不超过总页数的最大`2`的幂次方来确定初始内存块的阶数，将该大块加入到对应阶数的空闲链表中，并更新系统空闲页数计数，从而为后续的内存分配和释放操作建立完整的伙伴系统管理框架。
+
+#### 块分割算法
+
+<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+static void buddy_system_split(unsigned int order) {  //将一个大内存块分割成两个较小的伙伴块，order是要分割的内存块阶数
+    assert(order > 0 && order <= MAX_ORDER);  //确保块阶数有效
+
+    if (list_empty(&buddy_sys.free_array[order])) {  //检查指定阶数的空闲链表中是否有可用的块
+        return;  //若无：直接返回，不用分割
+    }
+
+    // 从空闲链表中获取第一个可用的内存块
+    list_entry_t* le = list_next(&buddy_sys.free_array[order]);
+    struct Page* page = le2page(le, page_link);  //将链表节点转换为对应结构体
+
+    // 将要分割的块从原阶数的空闲链表中移除
+    list_del(le);
+    buddy_sys.nr_free -= (1 << order);  //更新空闲内存计数器：减去原块的大小 2^order
+
+    // 计算新块的大小
+    unsigned int new_order = order - 1;  //新块的阶数比原块小1
+    size_t block_size = 1 << new_order;  //计算每个新块的大小：2^(order-1)个页
+
+    // 设置两个新块的属性
+    struct Page* left = page;  //第一个伙伴块（起始地址与原块相同）
+    struct Page* right = page + block_size;  //第二个伙伴块（起始地址 = left + block_size）
+
+    left->property = new_order;
+    right->property = new_order;  //设置新块的阶数属性
+
+    SetPageProperty(left);  //标记这些页是空闲块的一部分
+    SetPageProperty(right);
+    SetPageReserved(left);  //确保这些页不会被其他分配器使用（仍处于保留状态）
+    SetPageReserved(right);
+
+    // 将两个新块添加到对应阶的链表中
+    list_add(&buddy_sys.free_array[new_order], &(left->page_link));
+    list_add(&buddy_sys.free_array[new_order], &(right->page_link));
+    buddy_sys.nr_free += (2 << new_order);  //加上两个新块的大小 2 × 2^(order-1)
+
+    cprintf("buddy_system: split order %u -> two order %u blocks\n", order, new_order);
+}
+</pre>
+
+`buddy_system_split`函数实现了`buddy_system`的内存块分割机制，它首先从指定阶数的空闲链表中获取一个内存块并将其移除，然后将该大块对半分割成两个互为伙伴的小块，分别设置它们的阶数属性和页面标志，最后将这两个新块加入到低一阶的空闲链表中并更新系统空闲内存计数，从而完成从大块到两个小块的分解过程，为内存分配提供合适大小的块。
+
+#### 页面分配算法
+
+<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+static struct Page* buddy_system_alloc_pages(size_t n) {  //分配至少n个连续的物理页，n是请求的页面数量
+    assert(n > 0);  //确保请求的页面数有效
+
+    if (n > buddy_sys.nr_free) {  //检查系统是否有足够的空闲页面满足请求
+        cprintf("buddy_system: allocation failed, request %u pages, but only %u free\n",
+            (unsigned int)n, buddy_sys.nr_free);
+        return NULL;
+    }
+
+    // 计算需要的阶数
+    size_t required_size = Find_The_Big_2(n);  //找到大于等于n的最小2的次幂
+    unsigned int required_order = Get_Order_Of_2(required_size);  //计算对应的阶数
+
+    if (required_order > MAX_ORDER) {  //阶数范围检查
+        cprintf("buddy_system: allocation failed, required order %u exceeds max order %u\n",
+            required_order, MAX_ORDER);
+        return NULL;
+    }
+
+    // 查找合适的内存块：从所需阶数开始，向上查找第一个非空的空闲链表
+    unsigned int current_order = required_order;
+    while (current_order <= MAX_ORDER) {
+        if (!list_empty(&buddy_sys.free_array[current_order])) {
+            break;
+        }
+        current_order++;  //如果所需阶数没有空闲块，就找更大阶数的块
+    }
+
+    if (current_order > MAX_ORDER) {  //可用性检查
+        cprintf("buddy_system: allocation failed, no suitable block found\n");
+        return NULL;
+    }
+
+    // 如果找到的块比需要的大，不断分割直到得到合适大小的块
+    while (current_order > required_order) { 
+        buddy_system_split(current_order);
+        current_order--;  //每次分割时：阶数减一，块数加倍
+    }
+
+    // 分配内存块
+    list_entry_t* le = list_next(&buddy_sys.free_array[required_order]);
+    struct Page* page = le2page(le, page_link);  //从最终阶数的空闲链表中获取块
+
+    // 从空闲链表中移除
+    list_del(le);
+    buddy_sys.nr_free -= (1 << required_order);  //更新空闲页面计数器
+
+    // 清除页面属性，但保持保留状态
+    page->property = 0;
+    ClearPageProperty(page);
+    // 分配后仍然保持保留状态
+    SetPageReserved(page);
+
+    cprintf("buddy_system: allocated %u pages (order %u) at page %ld\n",
+        (unsigned int)n, required_order, page - pages);
+
+    return page;
+}
+</pre>
+
+`buddy_system_alloc_pages`函数是`buddy_system`内存分配的核心实现，它首先验证请求的页数有效性并检查系统是否有足够空闲内存，然后计算满足需求的最小`2`的幂次方对应的阶数。接着从所需阶数开始向上搜索空闲链表，找到第一个可用的内存块，如果该块大于需求则通过递归分割操作将其不断对半划分直至得到精确大小的块。最后从空闲链表中移除目标块，更新系统空闲页面计数，并设置页面的分配状态标志，完成整个内存分配流程，确保既满足请求需求又维护伙伴系统的结构完整性。
+
+#### 释放与合并算法
+
+<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+static void
+buddy_system_free_pages(struct Page* base, size_t n) {  //释放之前分配的内存块，并尝试与伙伴块合并形成更大的连续块，base是要释放的内存块起始页面指针，n是要释放的页面数量
+    assert(n > 0);  //保证有效性
+
+    // 计算块的阶数
+    size_t block_size = Find_The_Big_2(n);
+    unsigned int order = Get_Order_Of_2(block_size);
+
+    if (order > MAX_ORDER) {  //限制阶数不超过最大值
+        order = MAX_ORDER;
+    }
+
+    struct Page* current = base;
+    current->property = order;  //设置阶数
+    SetPageProperty(current);   //标记为属性页（空闲块）
+    SetPageReserved(current);   //仍处于保留状态
+
+    cprintf("buddy_system: freeing %u pages (order %u) at page %ld\n",
+        (unsigned int)n, order, base - pages);
+
+    // 尝试合并伙伴块 
+    unsigned int merge_count = 0;  //添加安全计数器防止死循环
+    while (order < MAX_ORDER && merge_count < MAX_ORDER) {  //开始合并循环，条件是当前阶数小于最大阶数且合并次数未达到上限
+        merge_count++;  //每次循环递增合并计数器
+
+        struct Page* buddy = get_buddy(current, order);  //调用get_buddy函数获取当前块在指定阶数下的伙伴块地址
+
+        // 更严格的伙伴块检查
+        if (!buddy) break;  //伙伴存在性检查
+        if (!PageProperty(buddy)) break;  //检查伙伴块是否具有PageProperty标志，如果没有说明伙伴块不是空闲块，不能合并
+        if (buddy->property != order) break;  //检查伙伴块的阶数是否与当前块相同，阶数不同不能合并
+
+        // 额外的安全检查：检查伙伴块地址是否在有效的物理内存范围内，防止越界访问
+        if (buddy < pages || buddy >= pages + npage) break;
+        if (!PageReserved(buddy)) break;
+
+        // 检查伙伴块是否确实在空闲链表中
+        int buddy_in_list = 0;  // 初始化标志变量，用于记录伙伴块是否确实在空闲链表中
+        list_entry_t* le = &buddy_sys.free_array[order];  //获取当前阶数的空闲链表头指针
+        list_entry_t* temp = le->next;  //获取链表的第一个节点
+        while (temp != le) {  //开始遍历链表，直到回到链表头
+            if (le2page(temp, page_link) == buddy) {  //检查当前链表节点对应的页面是否是我们要找的伙伴块，如果是则设置标志并退出循环
+                buddy_in_list = 1;  // 使用1代替true
+                break;
+            }
+            temp = temp->next;  //移动到下一个节点
+        }
+        if (!buddy_in_list) break;  //如果伙伴块不在空闲链表中，说明它不能被合并，退出循环
+
+        // 从链表中移除伙伴块
+        list_del(&(buddy->page_link));
+
+        // 确定合并后的块：比较当前块和伙伴块的地址，确保current指向地址较小的那个块
+        if (current > buddy) {
+            struct Page* temp_page = current;  
+            current = buddy;
+            buddy = temp_page;
+        }
+
+        // 合并块
+        order++;  //提升阶数
+        current->property = order;  //更新属性
+        SetPageReserved(current);   //保留状态
+
+        cprintf("buddy_system: merged two order %u blocks -> one order %u block\n",
+            order - 1, order);
+        // 更新空闲页面计数，减去被合并的伙伴块的大小
+        buddy_sys.nr_free -= (1 << (order - 1)); // 移除被合并的块
+    }
+
+    if (merge_count >= MAX_ORDER) {  //如果合并循环达到最大次数，输出警告信息
+        cprintf("buddy_system: warning, merge loop reached maximum iterations\n");
+    }
+
+    // 将块添加到对应阶的空闲链表
+    list_add(&buddy_sys.free_array[order], &(current->page_link));
+    buddy_sys.nr_free += (1 << order);
+
+    cprintf("buddy_system: freed successfully, total free: %u pages\n", buddy_sys.nr_free);
+}
+</pre>
+
+`buddy_system_free_pages`函数首先根据请求释放的页面数量计算对应的内存块阶数并初始化块属性，然后进入核心的合并循环：通过安全计数器防止无限循环，在循环中严格检查伙伴块的存在性、属性匹配、地址有效性和链表成员资格等多重条件，确保只有真正空闲且匹配的伙伴块才能参与合并；在确认可合并后，从链表中移除伙伴块，将两个小块合并为一个大块并提升阶数，重复此过程直至无法继续合并；最后将最终的内存块添加到对应阶数的空闲链表并更新系统空闲页面计数，完成内存的释放和碎片整理过程。
+
 ### 测试情况
+
+我们主要完成了以下几方面的测试：
+
+1. **基础功能测试**（简单的分配和释放）：基本分配功能、基本释放功能、地址不重叠检查、引用计数检查。
+2. **复杂分配测试**（不同大小的混合分配）：不同大小请求的分配、内存分割的正确性、复杂释放场景。
+3. **最小和最大分配**：最小单位(1页)分配、最大单位分配、边界值处理。
+4. **压力测试**（大量分配和释放）：频繁分配释放、内存碎片处理、系统稳定性。
+5. **伙伴合并测试**（专门测试合并功能）：伙伴块识别、合并操作正确性、多级合并。
+6. **错误处理测试**（异常情况处理）：非法参数处理、内存不足处理、重复释放检测。
+
+测试代码较多，由于篇幅问题，下面仅展示测试截图。
+
+#### 基础功能测试
+
+初始空闲页数为`16384`，系统从单个`order`为`14`的大块（`16384`页）开始。首先`p0`请求`10`页，需要`order 4`的块（`16`页），所以有分割链: `order 14 → 13 → 12 → 11 → 10 → 9 → 8 → 7 → 6 → 5 → 4`，最终分配页面`17208`，剩余`16368`页，结束后各阶链表状态：从`13`到`4`，每个阶数都有一个剩余块。
+
+![示例](pic/1.png)
+
+接下来`p1`请求`10`页，可以直接使用现有的`order 4`块（页面`17192`），无需分割，剩余`16352`页，`order 4`链表变空。
+
+![示例](pic/2.png)
+
+接下来`p2`又请求`10`页，需要分割`order 5`块：`order 5 →` 两个`order 4`。分配其中一个`order 4`块（页面`17176`），剩余`16336`页。
+
+![示例](pic/3.png)
+
+然后我们进行释放，首先释放`p0`（页面`17208`）：简单释放`order 4`块到对应链表。此时未发生合并，因为其伙伴块已被分配，`order 4`链表变为`2`个块，总空闲`16352`页。
+
+![示例](pic/4.png)
+
+然后释放`p1`（页面`17192`），这时会与之前释放的`p0`形成伙伴关系，两个`order 4`块合并为一个`order 5`块，总空闲增加到`16368`页，`order 4`链表剩`1`个块（`p2`还在使用其伙伴）。
+
+![示例](pic/5.png)
+
+最后释放`p2`（页面`17176`），这时会发生多级合并：首先与剩余`order 4`块合并为`order 5`，然后两个`order 5`块合并为`order 6`，最终总空闲恢复到`16384`页（完全回收）。
+
+![示例](pic/6.png)
+
+#### 复杂分配测试
+
+与上一个测试类似，我们依次让`p0`请求`10`页，`p1`请求`50`页，`p2`请求`100`页，`p3`请求`200`页，然后观察输出，均为正确结果。
+
+然后再进行释放：依次让`p2`释放`100`页，`p1`释放`50`页，`p0`释放`10`页，`p3`释放`200`页，观察输出，也均为正确结果。
+
+**由于代码和截图篇幅较长，我将输出结果保存为文本文档格式，位于`lab2`文件夹下的`buddy_system测试输出.txt`，可以在那里查看完整结果，故以下的测试也只对流程进行简述。全部的测试代码在`buddy_system_pmm.c`中。**
+
+#### 最小和最大分配
+
+我们尝试分配最小单位————即`1`页，这就触发了从`order 6`块开始的六级分割链（因为上一个测试结束后`order 6`有两个块，再小的阶数没有空闲块），经过`order 5`到`order 0`的逐级分割才获得最小内存单元，这也体现了小内存分配的高昂开销。释放该页面时则发生了三级合并，从`order 0`逐级合并到`order 3`后停止，形成两个`order 3`块而非完全恢复原状，可能因为其伙伴块已被分配或其他原因。
+
+在最大分配中，系统正确拒绝了超过物理内存总量的`32768`页请求和超出系统最大限制的`32769`页请求，均在初始检查阶段就直接失败，避免了不必要的分配操作。
+
+![示例](pic/7.png)
+
+#### 压力测试
+
+该测试验证了我们实现的`buddy_system`在复杂内存分配模式下的稳定性。测试首先连续分配了六个不同大小的内存块（`1`页、`2`页、`4`页、`8`页、`1`页、`2`页），触发了多级分割操作，系统成功分配但产生了内存碎片。
+
+在随机释放阶段，当释放两个相邻的`2`页块时触发了四级合并链，从`order 1`逐级合并到`order 4`，展示了`buddy_system`自动整理碎片的能力。随后重新分配时，系统重复使用之前释放的块并再次分割，证明了内存回收的有效性。
+
+最终全部释放阶段，系统通过多轮合并操作成功将内存完全回收，最终空闲页数恢复到初始的`16384`页，形成两个`order 3`块和一个`order 4`块的组织结构.系统在压力条件下能保持内存完整性，无泄漏发生，且合并机制能有效减少外部碎片。
+
+#### 伙伴合并测试
+
+该测试验证了伙伴系统内存合并的精确性要求。测试首先分配了四个`16`页的块，从页面地址分布可以看出这些块在内存中的布局：`p0(17200)、p1(17176)、p2(17160)、p3(17144)`。
+
+在释放阶段，首先释放`p0`和`p1`时，由于它们地址间隔`24`页，不满足伙伴系统要求的`16`页对齐关系，因此未能触发合并。随后释放`p2`和`p3`时，系统检测到它们地址正好相差`16`页，完全符合`order 4`块的伙伴关系，于是成功触发合并机制，先合并成`32`页的`order 5`块，进而继续与系统中已有的另一个`order 5`块合并成`64`页的`order 6`块。这个测试证明了伙伴系统的合并机制具有严格的地址对齐要求，只有完全符合伙伴关系的块才能合并，确保了内存管理的精确性和可靠性。
+
+#### 错误处理测试
+
+该测试验证了`buddy_system`在各种异常情况下的安全性。测试首先尝试分配`0`页，系统按预期触发断言失败，防止了无效的内存请求（因为我们编写的所有函数一开始都要求页数大于`0`）。接着测试极大值分配（`1073741824`页）和边界值分配（`32769`页），系统均正确检测到请求超过可用内存总量并立即拒绝，避免了资源耗尽。
+
+在内存耗尽测试中，系统识别到无法满足大块分配请求而安全返回，未发生系统崩溃。最终验证显示所有测试用例通过，空闲页数保持初始的`16384`页，无内存泄漏发生，证明我们实现的`buddy_system`能够稳定应对各种边界和错误条件，确保系统在极端情况下的可靠性。
+
+![示例](pic/8.png)
 
 ## 扩展练习Challenge：任意大小的内存单元slub分配算法
 

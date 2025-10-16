@@ -1,0 +1,671 @@
+sherry@Sherry-0628:~$ cd /mnt/c/Users/czy24/Desktop/OS/NKU_OS_Lab/lab2
+sherry@Sherry-0628:/mnt/c/Users/czy24/Desktop/OS/NKU_OS_Lab/lab2$ make clean
+rm -f -r obj bin
+sherry@Sherry-0628:/mnt/c/Users/czy24/Desktop/OS/NKU_OS_Lab/lab2$ make qemu
++ cc kern/init/entry.S
++ cc kern/init/init.c
++ cc kern/libs/stdio.c
++ cc kern/debug/panic.c
++ cc kern/driver/console.c
++ cc kern/driver/dtb.c
++ cc kern/mm/best_fit_pmm.c
++ cc kern/mm/buddy_system_pmm.c
++ cc kern/mm/default_pmm.c
++ cc kern/mm/pmm.c
++ cc libs/printfmt.c
++ cc libs/readline.c
++ cc libs/sbi.c
++ cc libs/string.c
++ ld bin/kernel
+riscv64-unknown-elf-objcopy bin/kernel --strip-all -O binary bin/ucore.img
+
+OpenSBI v0.4 (Jul  2 2019 11:53:53)
+   ____                    _____ ____ _____
+  / __ \                  / ____|  _ \_   _|
+ | |  | |_ __   ___ _ __ | (___ | |_) || |
+ | |  | | '_ \ / _ \ '_ \ \___ \|  _ < | |
+ | |__| | |_) |  __/ | | |____) | |_) || |_
+  \____/| .__/ \___|_| |_|_____/|____/_____|
+        | |
+        |_|
+
+Platform Name          : QEMU Virt Machine
+Platform HART Features : RV64ACDFIMSU
+Platform Max HARTs     : 8
+Current Hart           : 0
+Firmware Base          : 0x80000000
+Firmware Size          : 112 KB
+Runtime SBI Version    : 0.1
+
+PMP0: 0x0000000080000000-0x000000008001ffff (A)
+PMP1: 0x0000000000000000-0xffffffffffffffff (A,R,W,X)
+DTB Init
+HartID: 0
+DTB Address: 0x82200000
+Physical Memory from DTB:
+  Base: 0x0000000080000000
+  Size: 0x0000000008000000 (128 MB)
+  End:  0x0000000087ffffff
+DTB init completed
+(THU.CST) os is loading ...
+Special kernel symbols:
+  entry  0xffffffffc02000d8 (virtual)
+  etext  0xffffffffc0201e66 (virtual)
+  edata  0xffffffffc0207018 (virtual)
+  end    0xffffffffc0207170 (virtual)
+Kernel executable memory footprint: 29KB
+memory management: buddy_system_pmm_manager
+buddy_system: initialized with max_order=15
+physcial memory map:
+  memory: 0x0000000008000000, [0x0000000080000000, 0x0000000087ffffff].
+buddy_system_init_memmap: base=0xffffffffc0210340, n=31928
+buddy_system: added memory block of order 14 (16384 pages), total free: 16384
+
+**************************************************
+***        BEGIN BUDDY SYSTEM COMPREHENSIVE TEST       ***
+**************************************************
+
+初始空闲页数: 16384
+=== BEGIN TEST: EASY ALLOC AND FREE CONDITION ===
+当前总的空闲块的数量为：16384
+1. p0请求10页
+buddy_system: split order 14 -> two order 13 blocks
+buddy_system: split order 13 -> two order 12 blocks
+buddy_system: split order 12 -> two order 11 blocks
+buddy_system: split order 11 -> two order 10 blocks
+buddy_system: split order 10 -> two order 9 blocks
+buddy_system: split order 9 -> two order 8 blocks
+buddy_system: split order 8 -> two order 7 blocks
+buddy_system: split order 7 -> two order 6 blocks
+buddy_system: split order 6 -> two order 5 blocks
+buddy_system: split order 5 -> two order 4 blocks
+buddy_system: allocated 10 pages (order 4) at page 17208
+Buddy System Status (Total free: 16368 pages):
+Order  0 (size:     1 pages): empty
+Order  1 (size:     2 pages): empty
+Order  2 (size:     4 pages): empty
+Order  3 (size:     8 pages): empty
+Order  4 (size:    16 pages): 1 blocks
+Order  5 (size:    32 pages): 1 blocks
+Order  6 (size:    64 pages): 1 blocks
+Order  7 (size:   128 pages): 1 blocks
+Order  8 (size:   256 pages): 1 blocks
+Order  9 (size:   512 pages): 1 blocks
+Order 10 (size:  1024 pages): 1 blocks
+Order 11 (size:  2048 pages): 1 blocks
+Order 12 (size:  4096 pages): 1 blocks
+Order 13 (size:  8192 pages): 1 blocks
+Order 14 (size: 16384 pages): empty
+Order 15 (size: 32768 pages): empty
+2. p1请求10页
+buddy_system: allocated 10 pages (order 4) at page 17192
+Buddy System Status (Total free: 16352 pages):
+Order  0 (size:     1 pages): empty
+Order  1 (size:     2 pages): empty
+Order  2 (size:     4 pages): empty
+Order  3 (size:     8 pages): empty
+Order  4 (size:    16 pages): empty
+Order  5 (size:    32 pages): 1 blocks
+Order  6 (size:    64 pages): 1 blocks
+Order  7 (size:   128 pages): 1 blocks
+Order  8 (size:   256 pages): 1 blocks
+Order  9 (size:   512 pages): 1 blocks
+Order 10 (size:  1024 pages): 1 blocks
+Order 11 (size:  2048 pages): 1 blocks
+Order 12 (size:  4096 pages): 1 blocks
+Order 13 (size:  8192 pages): 1 blocks
+Order 14 (size: 16384 pages): empty
+Order 15 (size: 32768 pages): empty
+3. p2请求10页
+buddy_system: split order 5 -> two order 4 blocks
+buddy_system: allocated 10 pages (order 4) at page 17176
+Buddy System Status (Total free: 16336 pages):
+Order  0 (size:     1 pages): empty
+Order  1 (size:     2 pages): empty
+Order  2 (size:     4 pages): empty
+Order  3 (size:     8 pages): empty
+Order  4 (size:    16 pages): 1 blocks
+Order  5 (size:    32 pages): empty
+Order  6 (size:    64 pages): 1 blocks
+Order  7 (size:   128 pages): 1 blocks
+Order  8 (size:   256 pages): 1 blocks
+Order  9 (size:   512 pages): 1 blocks
+Order 10 (size:  1024 pages): 1 blocks
+Order 11 (size:  2048 pages): 1 blocks
+Order 12 (size:  4096 pages): 1 blocks
+Order 13 (size:  8192 pages): 1 blocks
+Order 14 (size: 16384 pages): empty
+Order 15 (size: 32768 pages): empty
+p0的虚拟地址为: 0xffffffffc02b00c0
+p1的虚拟地址为: 0xffffffffc02afe40
+p2的虚拟地址为: 0xffffffffc02afbc0
+4. 释放p0...
+buddy_system: freeing 10 pages (order 4) at page 17208
+buddy_system: freed successfully, total free: 16352 pages
+释放p0后，总空闲块数目为: 16352
+Buddy System Status (Total free: 16352 pages):
+Order  0 (size:     1 pages): empty
+Order  1 (size:     2 pages): empty
+Order  2 (size:     4 pages): empty
+Order  3 (size:     8 pages): empty
+Order  4 (size:    16 pages): 2 blocks
+Order  5 (size:    32 pages): empty
+Order  6 (size:    64 pages): 1 blocks
+Order  7 (size:   128 pages): 1 blocks
+Order  8 (size:   256 pages): 1 blocks
+Order  9 (size:   512 pages): 1 blocks
+Order 10 (size:  1024 pages): 1 blocks
+Order 11 (size:  2048 pages): 1 blocks
+Order 12 (size:  4096 pages): 1 blocks
+Order 13 (size:  8192 pages): 1 blocks
+Order 14 (size: 16384 pages): empty
+Order 15 (size: 32768 pages): empty
+5. 释放p1...
+buddy_system: freeing 10 pages (order 4) at page 17192
+buddy_system: merged two order 4 blocks -> one order 5 block
+buddy_system: freed successfully, total free: 16368 pages
+释放p1后，总空闲块数目为: 16368
+Buddy System Status (Total free: 16368 pages):
+Order  0 (size:     1 pages): empty
+Order  1 (size:     2 pages): empty
+Order  2 (size:     4 pages): empty
+Order  3 (size:     8 pages): empty
+Order  4 (size:    16 pages): 1 blocks
+Order  5 (size:    32 pages): 1 blocks
+Order  6 (size:    64 pages): 1 blocks
+Order  7 (size:   128 pages): 1 blocks
+Order  8 (size:   256 pages): 1 blocks
+Order  9 (size:   512 pages): 1 blocks
+Order 10 (size:  1024 pages): 1 blocks
+Order 11 (size:  2048 pages): 1 blocks
+Order 12 (size:  4096 pages): 1 blocks
+Order 13 (size:  8192 pages): 1 blocks
+Order 14 (size: 16384 pages): empty
+Order 15 (size: 32768 pages): empty
+6. 释放p2...
+buddy_system: freeing 10 pages (order 4) at page 17176
+buddy_system: merged two order 4 blocks -> one order 5 block
+buddy_system: merged two order 5 blocks -> one order 6 block
+buddy_system: freed successfully, total free: 16384 pages
+释放p2后，总空闲块数目为: 16384
+Buddy System Status (Total free: 16384 pages):
+Order  0 (size:     1 pages): empty
+Order  1 (size:     2 pages): empty
+Order  2 (size:     4 pages): empty
+Order  3 (size:     8 pages): empty
+Order  4 (size:    16 pages): empty
+Order  5 (size:    32 pages): empty
+Order  6 (size:    64 pages): 2 blocks
+Order  7 (size:   128 pages): 1 blocks
+Order  8 (size:   256 pages): 1 blocks
+Order  9 (size:   512 pages): 1 blocks
+Order 10 (size:  1024 pages): 1 blocks
+Order 11 (size:  2048 pages): 1 blocks
+Order 12 (size:  4096 pages): 1 blocks
+Order 13 (size:  8192 pages): 1 blocks
+Order 14 (size: 16384 pages): empty
+Order 15 (size: 32768 pages): empty
+=== END TEST: EASY ALLOC AND FREE CONDITION ===
+
+=== BEGIN TEST: COMPLEX ALLOC AND FREE CONDITION ===
+1. p0请求10页
+buddy_system: split order 6 -> two order 5 blocks
+buddy_system: split order 5 -> two order 4 blocks
+buddy_system: allocated 10 pages (order 4) at page 17208
+Buddy System Status (Total free: 16368 pages):
+Order  0 (size:     1 pages): empty
+Order  1 (size:     2 pages): empty
+Order  2 (size:     4 pages): empty
+Order  3 (size:     8 pages): empty
+Order  4 (size:    16 pages): 1 blocks
+Order  5 (size:    32 pages): 1 blocks
+Order  6 (size:    64 pages): 1 blocks
+Order  7 (size:   128 pages): 1 blocks
+Order  8 (size:   256 pages): 1 blocks
+Order  9 (size:   512 pages): 1 blocks
+Order 10 (size:  1024 pages): 1 blocks
+Order 11 (size:  2048 pages): 1 blocks
+Order 12 (size:  4096 pages): 1 blocks
+Order 13 (size:  8192 pages): 1 blocks
+Order 14 (size: 16384 pages): empty
+Order 15 (size: 32768 pages): empty
+2. p1请求50页
+buddy_system: allocated 50 pages (order 6) at page 17096
+Buddy System Status (Total free: 16304 pages):
+Order  0 (size:     1 pages): empty
+Order  1 (size:     2 pages): empty
+Order  2 (size:     4 pages): empty
+Order  3 (size:     8 pages): empty
+Order  4 (size:    16 pages): 1 blocks
+Order  5 (size:    32 pages): 1 blocks
+Order  6 (size:    64 pages): empty
+Order  7 (size:   128 pages): 1 blocks
+Order  8 (size:   256 pages): 1 blocks
+Order  9 (size:   512 pages): 1 blocks
+Order 10 (size:  1024 pages): 1 blocks
+Order 11 (size:  2048 pages): 1 blocks
+Order 12 (size:  4096 pages): 1 blocks
+Order 13 (size:  8192 pages): 1 blocks
+Order 14 (size: 16384 pages): empty
+Order 15 (size: 32768 pages): empty
+3. p2请求100页
+buddy_system: allocated 100 pages (order 7) at page 16968
+Buddy System Status (Total free: 16176 pages):
+Order  0 (size:     1 pages): empty
+Order  1 (size:     2 pages): empty
+Order  2 (size:     4 pages): empty
+Order  3 (size:     8 pages): empty
+Order  4 (size:    16 pages): 1 blocks
+Order  5 (size:    32 pages): 1 blocks
+Order  6 (size:    64 pages): empty
+Order  7 (size:   128 pages): empty
+Order  8 (size:   256 pages): 1 blocks
+Order  9 (size:   512 pages): 1 blocks
+Order 10 (size:  1024 pages): 1 blocks
+Order 11 (size:  2048 pages): 1 blocks
+Order 12 (size:  4096 pages): 1 blocks
+Order 13 (size:  8192 pages): 1 blocks
+Order 14 (size: 16384 pages): empty
+Order 15 (size: 32768 pages): empty
+4. p3请求200页
+buddy_system: allocated 200 pages (order 8) at page 16712
+Buddy System Status (Total free: 15920 pages):
+Order  0 (size:     1 pages): empty
+Order  1 (size:     2 pages): empty
+Order  2 (size:     4 pages): empty
+Order  3 (size:     8 pages): empty
+Order  4 (size:    16 pages): 1 blocks
+Order  5 (size:    32 pages): 1 blocks
+Order  6 (size:    64 pages): empty
+Order  7 (size:   128 pages): empty
+Order  8 (size:   256 pages): empty
+Order  9 (size:   512 pages): 1 blocks
+Order 10 (size:  1024 pages): 1 blocks
+Order 11 (size:  2048 pages): 1 blocks
+Order 12 (size:  4096 pages): 1 blocks
+Order 13 (size:  8192 pages): 1 blocks
+Order 14 (size: 16384 pages): empty
+Order 15 (size: 32768 pages): empty
+5. 先释放p2(100页)...
+buddy_system: freeing 100 pages (order 7) at page 16968
+buddy_system: freed successfully, total free: 16048 pages
+Buddy System Status (Total free: 16048 pages):
+Order  0 (size:     1 pages): empty
+Order  1 (size:     2 pages): empty
+Order  2 (size:     4 pages): empty
+Order  3 (size:     8 pages): empty
+Order  4 (size:    16 pages): 1 blocks
+Order  5 (size:    32 pages): 1 blocks
+Order  6 (size:    64 pages): empty
+Order  7 (size:   128 pages): 1 blocks
+Order  8 (size:   256 pages): empty
+Order  9 (size:   512 pages): 1 blocks
+Order 10 (size:  1024 pages): 1 blocks
+Order 11 (size:  2048 pages): 1 blocks
+Order 12 (size:  4096 pages): 1 blocks
+Order 13 (size:  8192 pages): 1 blocks
+Order 14 (size: 16384 pages): empty
+Order 15 (size: 32768 pages): empty
+6. 再释放p1(50页)...
+buddy_system: freeing 50 pages (order 6) at page 17096
+buddy_system: freed successfully, total free: 16112 pages
+Buddy System Status (Total free: 16112 pages):
+Order  0 (size:     1 pages): empty
+Order  1 (size:     2 pages): empty
+Order  2 (size:     4 pages): empty
+Order  3 (size:     8 pages): empty
+Order  4 (size:    16 pages): 1 blocks
+Order  5 (size:    32 pages): 1 blocks
+Order  6 (size:    64 pages): 1 blocks
+Order  7 (size:   128 pages): 1 blocks
+Order  8 (size:   256 pages): empty
+Order  9 (size:   512 pages): 1 blocks
+Order 10 (size:  1024 pages): 1 blocks
+Order 11 (size:  2048 pages): 1 blocks
+Order 12 (size:  4096 pages): 1 blocks
+Order 13 (size:  8192 pages): 1 blocks
+Order 14 (size: 16384 pages): empty
+Order 15 (size: 32768 pages): empty
+7. 释放p0(10页)...
+buddy_system: freeing 10 pages (order 4) at page 17208
+buddy_system: merged two order 4 blocks -> one order 5 block
+buddy_system: merged two order 5 blocks -> one order 6 block
+buddy_system: freed successfully, total free: 16128 pages
+Buddy System Status (Total free: 16128 pages):
+Order  0 (size:     1 pages): empty
+Order  1 (size:     2 pages): empty
+Order  2 (size:     4 pages): empty
+Order  3 (size:     8 pages): empty
+Order  4 (size:    16 pages): empty
+Order  5 (size:    32 pages): empty
+Order  6 (size:    64 pages): 2 blocks
+Order  7 (size:   128 pages): 1 blocks
+Order  8 (size:   256 pages): empty
+Order  9 (size:   512 pages): 1 blocks
+Order 10 (size:  1024 pages): 1 blocks
+Order 11 (size:  2048 pages): 1 blocks
+Order 12 (size:  4096 pages): 1 blocks
+Order 13 (size:  8192 pages): 1 blocks
+Order 14 (size: 16384 pages): empty
+Order 15 (size: 32768 pages): empty
+8. 最后释放p3(200页)...
+buddy_system: freeing 200 pages (order 8) at page 16712
+buddy_system: freed successfully, total free: 16384 pages
+Buddy System Status (Total free: 16384 pages):
+Order  0 (size:     1 pages): empty
+Order  1 (size:     2 pages): empty
+Order  2 (size:     4 pages): empty
+Order  3 (size:     8 pages): empty
+Order  4 (size:    16 pages): empty
+Order  5 (size:    32 pages): empty
+Order  6 (size:    64 pages): 2 blocks
+Order  7 (size:   128 pages): 1 blocks
+Order  8 (size:   256 pages): 1 blocks
+Order  9 (size:   512 pages): 1 blocks
+Order 10 (size:  1024 pages): 1 blocks
+Order 11 (size:  2048 pages): 1 blocks
+Order 12 (size:  4096 pages): 1 blocks
+Order 13 (size:  8192 pages): 1 blocks
+Order 14 (size: 16384 pages): empty
+Order 15 (size: 32768 pages): empty
+=== END TEST: COMPLEX ALLOC AND FREE CONDITION ===
+
+=== BEGIN TEST: BOUNDARY ALLOC AND FREE CONDITION ===
+1. 分配最小单位(1页)...
+buddy_system: split order 6 -> two order 5 blocks
+buddy_system: split order 5 -> two order 4 blocks
+buddy_system: split order 4 -> two order 3 blocks
+buddy_system: split order 3 -> two order 2 blocks
+buddy_system: split order 2 -> two order 1 blocks
+buddy_system: split order 1 -> two order 0 blocks
+buddy_system: allocated 1 pages (order 0) at page 17223
+Buddy System Status (Total free: 16383 pages):
+Order  0 (size:     1 pages): 1 blocks
+Order  1 (size:     2 pages): 1 blocks
+Order  2 (size:     4 pages): 1 blocks
+Order  3 (size:     8 pages): 1 blocks
+Order  4 (size:    16 pages): 1 blocks
+Order  5 (size:    32 pages): 1 blocks
+Order  6 (size:    64 pages): 1 blocks
+Order  7 (size:   128 pages): 1 blocks
+Order  8 (size:   256 pages): 1 blocks
+Order  9 (size:   512 pages): 1 blocks
+Order 10 (size:  1024 pages): 1 blocks
+Order 11 (size:  2048 pages): 1 blocks
+Order 12 (size:  4096 pages): 1 blocks
+Order 13 (size:  8192 pages): 1 blocks
+Order 14 (size: 16384 pages): empty
+Order 15 (size: 32768 pages): empty
+2. 释放最小单位(1页)...
+buddy_system: freeing 1 pages (order 0) at page 17223
+buddy_system: merged two order 0 blocks -> one order 1 block
+buddy_system: merged two order 1 blocks -> one order 2 block
+buddy_system: merged two order 2 blocks -> one order 3 block
+buddy_system: freed successfully, total free: 16384 pages
+Buddy System Status (Total free: 16384 pages):
+Order  0 (size:     1 pages): empty
+Order  1 (size:     2 pages): empty
+Order  2 (size:     4 pages): empty
+Order  3 (size:     8 pages): 2 blocks
+Order  4 (size:    16 pages): 1 blocks
+Order  5 (size:    32 pages): 1 blocks
+Order  6 (size:    64 pages): 1 blocks
+Order  7 (size:   128 pages): 1 blocks
+Order  8 (size:   256 pages): 1 blocks
+Order  9 (size:   512 pages): 1 blocks
+Order 10 (size:  1024 pages): 1 blocks
+Order 11 (size:  2048 pages): 1 blocks
+Order 12 (size:  4096 pages): 1 blocks
+Order 13 (size:  8192 pages): 1 blocks
+Order 14 (size: 16384 pages): empty
+Order 15 (size: 32768 pages): empty
+3. 分配最大单位(32768页)...
+buddy_system: allocation failed, request 32768 pages, but only 16384 free
+4. 最大分配失败，内存不足
+5. 尝试分配超过最大限制(32768 + 1页)...
+buddy_system: allocation failed, request 32769 pages, but only 16384 free
+   分配失败，符合预期
+=== END TEST: BOUNDARY ALLOC AND FREE CONDITION ===
+
+=== BEGIN TEST: STRESS CONDITION ===
+1. 连续分配6个不同大小的块...
+buddy_system: split order 3 -> two order 2 blocks
+buddy_system: split order 2 -> two order 1 blocks
+buddy_system: split order 1 -> two order 0 blocks
+buddy_system: allocated 1 pages (order 0) at page 17223
+   分配第1个块: 1页
+buddy_system: allocated 2 pages (order 1) at page 17220
+   分配第2个块: 2页
+buddy_system: allocated 4 pages (order 2) at page 17216
+   分配第3个块: 4页
+buddy_system: allocated 8 pages (order 3) at page 17208
+   分配第4个块: 8页
+buddy_system: allocated 1 pages (order 0) at page 17222
+   分配第5个块: 1页
+buddy_system: split order 4 -> two order 3 blocks
+buddy_system: split order 3 -> two order 2 blocks
+buddy_system: split order 2 -> two order 1 blocks
+buddy_system: allocated 2 pages (order 1) at page 17206
+   分配第6个块: 2页
+Buddy System Status (Total free: 16366 pages):
+Order  0 (size:     1 pages): empty
+Order  1 (size:     2 pages): 1 blocks
+Order  2 (size:     4 pages): 1 blocks
+Order  3 (size:     8 pages): 1 blocks
+Order  4 (size:    16 pages): empty
+Order  5 (size:    32 pages): 1 blocks
+Order  6 (size:    64 pages): 1 blocks
+Order  7 (size:   128 pages): 1 blocks
+Order  8 (size:   256 pages): 1 blocks
+Order  9 (size:   512 pages): 1 blocks
+Order 10 (size:  1024 pages): 1 blocks
+Order 11 (size:  2048 pages): 1 blocks
+Order 12 (size:  4096 pages): 1 blocks
+Order 13 (size:  8192 pages): 1 blocks
+Order 14 (size: 16384 pages): empty
+Order 15 (size: 32768 pages): empty
+2. 随机释放部分块...
+buddy_system: freeing 2 pages (order 1) at page 17220
+buddy_system: freed successfully, total free: 16368 pages
+buddy_system: freeing 8 pages (order 3) at page 17208
+buddy_system: freed successfully, total free: 16376 pages
+buddy_system: freeing 2 pages (order 1) at page 17206
+buddy_system: merged two order 1 blocks -> one order 2 block
+buddy_system: merged two order 2 blocks -> one order 3 block
+buddy_system: merged two order 3 blocks -> one order 4 block
+buddy_system: freed successfully, total free: 16378 pages
+Buddy System Status (Total free: 16378 pages):
+Order  0 (size:     1 pages): empty
+Order  1 (size:     2 pages): 1 blocks
+Order  2 (size:     4 pages): empty
+Order  3 (size:     8 pages): 1 blocks
+Order  4 (size:    16 pages): 1 blocks
+Order  5 (size:    32 pages): 1 blocks
+Order  6 (size:    64 pages): 1 blocks
+Order  7 (size:   128 pages): 1 blocks
+Order  8 (size:   256 pages): 1 blocks
+Order  9 (size:   512 pages): 1 blocks
+Order 10 (size:  1024 pages): 1 blocks
+Order 11 (size:  2048 pages): 1 blocks
+Order 12 (size:  4096 pages): 1 blocks
+Order 13 (size:  8192 pages): 1 blocks
+Order 14 (size: 16384 pages): empty
+Order 15 (size: 32768 pages): empty
+3. 再次分配填补空缺...
+buddy_system: allocated 2 pages (order 1) at page 17220
+buddy_system: allocated 8 pages (order 3) at page 17192
+buddy_system: split order 4 -> two order 3 blocks
+buddy_system: split order 3 -> two order 2 blocks
+buddy_system: split order 2 -> two order 1 blocks
+buddy_system: allocated 2 pages (order 1) at page 17214
+Buddy System Status (Total free: 16366 pages):
+Order  0 (size:     1 pages): empty
+Order  1 (size:     2 pages): 1 blocks
+Order  2 (size:     4 pages): 1 blocks
+Order  3 (size:     8 pages): 1 blocks
+Order  4 (size:    16 pages): empty
+Order  5 (size:    32 pages): 1 blocks
+Order  6 (size:    64 pages): 1 blocks
+Order  7 (size:   128 pages): 1 blocks
+Order  8 (size:   256 pages): 1 blocks
+Order  9 (size:   512 pages): 1 blocks
+Order 10 (size:  1024 pages): 1 blocks
+Order 11 (size:  2048 pages): 1 blocks
+Order 12 (size:  4096 pages): 1 blocks
+Order 13 (size:  8192 pages): 1 blocks
+Order 14 (size: 16384 pages): empty
+Order 15 (size: 32768 pages): empty
+4. 全部释放...
+buddy_system: freeing 1 pages (order 0) at page 17223
+buddy_system: freed successfully, total free: 16367 pages
+buddy_system: freeing 2 pages (order 1) at page 17220
+buddy_system: freed successfully, total free: 16369 pages
+buddy_system: freeing 4 pages (order 2) at page 17216
+buddy_system: freed successfully, total free: 16373 pages
+buddy_system: freeing 8 pages (order 3) at page 17192
+buddy_system: freed successfully, total free: 16381 pages
+buddy_system: freeing 1 pages (order 0) at page 17222
+buddy_system: merged two order 0 blocks -> one order 1 block
+buddy_system: merged two order 1 blocks -> one order 2 block
+buddy_system: merged two order 2 blocks -> one order 3 block
+buddy_system: freed successfully, total free: 16382 pages
+buddy_system: freeing 2 pages (order 1) at page 17214
+buddy_system: merged two order 1 blocks -> one order 2 block
+buddy_system: merged two order 2 blocks -> one order 3 block
+buddy_system: merged two order 3 blocks -> one order 4 block
+buddy_system: freed successfully, total free: 16384 pages
+Buddy System Status (Total free: 16384 pages):
+Order  0 (size:     1 pages): empty
+Order  1 (size:     2 pages): empty
+Order  2 (size:     4 pages): empty
+Order  3 (size:     8 pages): 2 blocks
+Order  4 (size:    16 pages): 1 blocks
+Order  5 (size:    32 pages): 1 blocks
+Order  6 (size:    64 pages): 1 blocks
+Order  7 (size:   128 pages): 1 blocks
+Order  8 (size:   256 pages): 1 blocks
+Order  9 (size:   512 pages): 1 blocks
+Order 10 (size:  1024 pages): 1 blocks
+Order 11 (size:  2048 pages): 1 blocks
+Order 12 (size:  4096 pages): 1 blocks
+Order 13 (size:  8192 pages): 1 blocks
+Order 14 (size: 16384 pages): empty
+Order 15 (size: 32768 pages): empty
+=== END TEST: STRESS CONDITION ===
+
+=== BEGIN TEST: MERGE CONDITION ===
+1. 分配4个16页的块...
+buddy_system: allocated 16 pages (order 4) at page 17200
+buddy_system: split order 5 -> two order 4 blocks
+buddy_system: allocated 16 pages (order 4) at page 17176
+buddy_system: allocated 16 pages (order 4) at page 17160
+buddy_system: split order 6 -> two order 5 blocks
+buddy_system: split order 5 -> two order 4 blocks
+buddy_system: allocated 16 pages (order 4) at page 17144
+Buddy System Status (Total free: 16320 pages):
+Order  0 (size:     1 pages): empty
+Order  1 (size:     2 pages): empty
+Order  2 (size:     4 pages): empty
+Order  3 (size:     8 pages): 2 blocks
+Order  4 (size:    16 pages): 1 blocks
+Order  5 (size:    32 pages): 1 blocks
+Order  6 (size:    64 pages): empty
+Order  7 (size:   128 pages): 1 blocks
+Order  8 (size:   256 pages): 1 blocks
+Order  9 (size:   512 pages): 1 blocks
+Order 10 (size:  1024 pages): 1 blocks
+Order 11 (size:  2048 pages): 1 blocks
+Order 12 (size:  4096 pages): 1 blocks
+Order 13 (size:  8192 pages): 1 blocks
+Order 14 (size: 16384 pages): empty
+Order 15 (size: 32768 pages): empty
+2. 按合并友好顺序释放...
+   释放p0和p1...
+buddy_system: freeing 16 pages (order 4) at page 17200
+buddy_system: freed successfully, total free: 16336 pages
+buddy_system: freeing 16 pages (order 4) at page 17176
+buddy_system: freed successfully, total free: 16352 pages
+Buddy System Status (Total free: 16352 pages):
+Order  0 (size:     1 pages): empty
+Order  1 (size:     2 pages): empty
+Order  2 (size:     4 pages): empty
+Order  3 (size:     8 pages): 2 blocks
+Order  4 (size:    16 pages): 3 blocks
+Order  5 (size:    32 pages): 1 blocks
+Order  6 (size:    64 pages): empty
+Order  7 (size:   128 pages): 1 blocks
+Order  8 (size:   256 pages): 1 blocks
+Order  9 (size:   512 pages): 1 blocks
+Order 10 (size:  1024 pages): 1 blocks
+Order 11 (size:  2048 pages): 1 blocks
+Order 12 (size:  4096 pages): 1 blocks
+Order 13 (size:  8192 pages): 1 blocks
+Order 14 (size: 16384 pages): empty
+Order 15 (size: 32768 pages): empty
+   释放p2和p3...
+buddy_system: freeing 16 pages (order 4) at page 17160
+buddy_system: merged two order 4 blocks -> one order 5 block
+buddy_system: freed successfully, total free: 16368 pages
+buddy_system: freeing 16 pages (order 4) at page 17144
+buddy_system: merged two order 4 blocks -> one order 5 block
+buddy_system: merged two order 5 blocks -> one order 6 block
+buddy_system: freed successfully, total free: 16384 pages
+Buddy System Status (Total free: 16384 pages):
+Order  0 (size:     1 pages): empty
+Order  1 (size:     2 pages): empty
+Order  2 (size:     4 pages): empty
+Order  3 (size:     8 pages): 2 blocks
+Order  4 (size:    16 pages): 1 blocks
+Order  5 (size:    32 pages): 1 blocks
+Order  6 (size:    64 pages): 1 blocks
+Order  7 (size:   128 pages): 1 blocks
+Order  8 (size:   256 pages): 1 blocks
+Order  9 (size:   512 pages): 1 blocks
+Order 10 (size:  1024 pages): 1 blocks
+Order 11 (size:  2048 pages): 1 blocks
+Order 12 (size:  4096 pages): 1 blocks
+Order 13 (size:  8192 pages): 1 blocks
+Order 14 (size: 16384 pages): empty
+Order 15 (size: 32768 pages): empty
+3. 验证最终合并结果...
+Buddy System Status (Total free: 16384 pages):
+Order  0 (size:     1 pages): empty
+Order  1 (size:     2 pages): empty
+Order  2 (size:     4 pages): empty
+Order  3 (size:     8 pages): 2 blocks
+Order  4 (size:    16 pages): 1 blocks
+Order  5 (size:    32 pages): 1 blocks
+Order  6 (size:    64 pages): 1 blocks
+Order  7 (size:   128 pages): 1 blocks
+Order  8 (size:   256 pages): 1 blocks
+Order  9 (size:   512 pages): 1 blocks
+Order 10 (size:  1024 pages): 1 blocks
+Order 11 (size:  2048 pages): 1 blocks
+Order 12 (size:  4096 pages): 1 blocks
+Order 13 (size:  8192 pages): 1 blocks
+Order 14 (size: 16384 pages): empty
+Order 15 (size: 32768 pages): empty
+=== END TEST: MERGE CONDITION ===
+
+=== BEGIN TEST: ERROR CONDITION ===
+1. 测试分配0页...
+   预期行为：触发断言失败，跳过此测试
+2. 测试分配极大值...
+buddy_system: allocation failed, request 1073741824 pages, but only 16384 free
+   分配失败，符合预期
+3. 测试边界值分配...
+buddy_system: allocation failed, request 32769 pages, but only 16384 free
+   分配 32769 页失败，符合预期
+4. 测试内存耗尽情况...
+buddy_system: allocation failed, no suitable block found
+   无法一次性分配所有内存，跳过内存耗尽测试
+=== END TEST: ERROR CONDITION ===
+
+最终空闲页数: 16384
+✓ 内存泄漏检查通过
+**************************************************
+***         ALL TESTS PASSED SUCCESSFULLY!         ***
+**************************************************
+check_alloc_page() succeeded!
+satp virtual address: 0xffffffffc0206000
+satp physical address: 0x0000000080206000

@@ -565,12 +565,12 @@ buddy_system_check_merge_condition(void) {
     show_buddy_array(0, MAX_ORDER);
 
     cprintf("2. 按合并友好顺序释放...\n");
-    cprintf("   释放p0和p1(应该合并为32页块)...\n");
+    cprintf("   释放p0和p1...\n");
     buddy_system_free_pages(p0, 16);
     buddy_system_free_pages(p1, 16);
     show_buddy_array(0, MAX_ORDER);
 
-    cprintf("   释放p2和p3(应该合并为另一个32页块)...\n");
+    cprintf("   释放p2和p3...\n");
     buddy_system_free_pages(p2, 16);
     buddy_system_free_pages(p3, 16);
     show_buddy_array(0, MAX_ORDER);
