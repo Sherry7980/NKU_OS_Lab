@@ -1,6 +1,6 @@
 # Lab2
 
-2311205李欣航&nbsp;&nbsp;&nbsp; 2310711陈子烨
+2311205李欣航&nbsp;&nbsp;&nbsp; 2311378姜润林&nbsp;&nbsp;&nbsp; 2310711陈子烨
 
 ## 练习1：理解 first-fit 连续物理内存分配算法
 
@@ -839,3 +839,64 @@ buddy_system_free_pages(struct Page* base, size_t n) {  //释放之前分配的�
 ## 扩展练习Challenge：任意大小的内存单元slub分配算法
 
 ## 扩展练习Challenge：硬件的可用物理内存范围的获取方法
+
+### 如何让 OS 获取可用物理内存范围
+
+#### 逐页测试
+
+从一个物理地址开始逐页访问，循环读取当前值并验证是否一致，若一致则该页可用，否则认为超出边界或其他可能的错误，但该方法需要对每个页进行访问，速度较慢。
+
+#### Bootloader
+
+由于`Bootloader`可以比内核更早执行，那么可以由它将包含相关信息的表或其他数据结果传递给内核，该方法在现代的`UEFI`中有相应的实现。
+
+### 现代操作系统的实际解决办法
+
+#### BIOS 中断
+
+获取物理内存容量可以通过`BIOS`中断`（INT 15h, E820）`实现，`BIOS` 会返回一张包括起始位置、长度、类型在内的内存映射表，结构如下：
+
+<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+C++
+struct e820map {
+    int nr_map;
+    struct {
+        long long addr;
+        long long size;
+        long type;
+    } map[E820MAX];
+};
+</pre>
+
+在这个中断执行后，会被存入内存，再由内核读取。
+
+#### Multiboot 协议
+
+当操作系统无法直接调用`BIOS`中断时，会通过`Multiboot`获取。
+
+它会在启动时通过寄存器`EBX`传给内核一个结构指针，`EBX`寄存器包含`multiboot_info`数据结构的物理地址，引导加载程序通过该地址将信息传达给操作系统。
+
+`multiboot_info`格式如下：
+
+![示例](pic/9.png)
+
+结构体大致如下：
+
+<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+C++
+typedef struct multiboot_info {
+    uint32_t flags;                      //标志位，表明字段是否有效
+    uint32_t mem_lower, mem_upper;       //低端、高端内存
+    uint32_t mmap_length;                //内存映射表长度
+    uint32_t mmap_addr;                  //内存映射表地址
+    ...
+} multiboot_info_t;
+</pre>
+
+其中`mmap_addr`和`mmap_length`字段指向的内存映射表为`BIOS`中断使用的结构体（`E820`函数）
+
+#### UEFI固件调用
+
+`UEFI`提供可以返回物理内存布局表的函数`GetMemoryMap`，该函数中包含`EFI_MEMORY_DESCRIPTOR`结构体，用来定义内存类型和起始物理地址等信息。
+
+在内核启动前，先调用`GetMemoryMap`函数，得到完整的物理内存布局表，然后将该表的地址传给内核，并在启动时进行解析。

@@ -898,7 +898,7 @@ ffffffffc020062c:	8caa                	mv	s9,a0
     cprintf("buddy_system: freeing %u pages (order %u) at page %ld\n",
 ffffffffc020062e:	878d                	srai	a5,a5,0x3
 ffffffffc0200630:	00003997          	auipc	s3,0x3
-ffffffffc0200634:	e109b983          	ld	s3,-496(s3) # ffffffffc0203440 <error_string+0x38>
+ffffffffc0200634:	dd89b983          	ld	s3,-552(s3) # ffffffffc0203408 <error_string+0x38>
 buddy_system_free_pages(struct Page* base, size_t n) {
 ffffffffc0200638:	e506                	sd	ra,136(sp)
 ffffffffc020063a:	e122                	sd	s0,128(sp)
@@ -1378,7 +1378,7 @@ ffffffffc02009d4:	00006717          	auipc	a4,0x6
 ffffffffc02009d8:	77473703          	ld	a4,1908(a4) # ffffffffc0207148 <pages>
     cprintf("buddy_system: allocated %u pages (order %u) at page %ld\n",
 ffffffffc02009dc:	00003697          	auipc	a3,0x3
-ffffffffc02009e0:	a646b683          	ld	a3,-1436(a3) # ffffffffc0203440 <error_string+0x38>
+ffffffffc02009e0:	a2c6b683          	ld	a3,-1492(a3) # ffffffffc0203408 <error_string+0x38>
     struct Page* page = le2page(le, page_link);
 ffffffffc02009e4:	fe878413          	addi	s0,a5,-24
         (unsigned int)n, required_order, page - pages);
@@ -1824,10 +1824,10 @@ ffffffffc0200d9a:	3b27b783          	ld	a5,946(a5) # ffffffffc0207148 <pages>
 ffffffffc0200d9e:	40f90733          	sub	a4,s2,a5
 ffffffffc0200da2:	870d                	srai	a4,a4,0x3
 ffffffffc0200da4:	00002597          	auipc	a1,0x2
-ffffffffc0200da8:	69c5b583          	ld	a1,1692(a1) # ffffffffc0203440 <error_string+0x38>
+ffffffffc0200da8:	6645b583          	ld	a1,1636(a1) # ffffffffc0203408 <error_string+0x38>
 ffffffffc0200dac:	02b70733          	mul	a4,a4,a1
 ffffffffc0200db0:	00002617          	auipc	a2,0x2
-ffffffffc0200db4:	69863603          	ld	a2,1688(a2) # ffffffffc0203448 <nbase>
+ffffffffc0200db4:	66063603          	ld	a2,1632(a2) # ffffffffc0203410 <nbase>
     assert(page2pa(p0) < npage * PGSIZE);
 ffffffffc0200db8:	00006697          	auipc	a3,0x6
 ffffffffc0200dbc:	3886b683          	ld	a3,904(a3) # ffffffffc0207140 <npage>
@@ -2267,7 +2267,7 @@ ffffffffc02011f8:	9d5ff0ef          	jal	ra,ffffffffc0200bcc <show_buddy_array.c
 ffffffffc02011fc:	00002517          	auipc	a0,0x2
 ffffffffc0201200:	afc50513          	addi	a0,a0,-1284 # ffffffffc0202cf8 <etext+0xe92>
 ffffffffc0201204:	f49fe0ef          	jal	ra,ffffffffc020014c <cprintf>
-    cprintf("   释放p0和p1(应该合并为32页块)...\n");
+    cprintf("   释放p0和p1...\n");
 ffffffffc0201208:	00002517          	auipc	a0,0x2
 ffffffffc020120c:	b1850513          	addi	a0,a0,-1256 # ffffffffc0202d20 <etext+0xeba>
 ffffffffc0201210:	f3dfe0ef          	jal	ra,ffffffffc020014c <cprintf>
@@ -2280,9 +2280,9 @@ ffffffffc020121e:	854a                	mv	a0,s2
 ffffffffc0201220:	bf0ff0ef          	jal	ra,ffffffffc0200610 <buddy_system_free_pages.part.0>
     show_buddy_array(0, MAX_ORDER);
 ffffffffc0201224:	9a9ff0ef          	jal	ra,ffffffffc0200bcc <show_buddy_array.constprop.0>
-    cprintf("   释放p2和p3(应该合并为另一个32页块)...\n");
+    cprintf("   释放p2和p3...\n");
 ffffffffc0201228:	00002517          	auipc	a0,0x2
-ffffffffc020122c:	b2850513          	addi	a0,a0,-1240 # ffffffffc0202d50 <etext+0xeea>
+ffffffffc020122c:	b1050513          	addi	a0,a0,-1264 # ffffffffc0202d38 <etext+0xed2>
 ffffffffc0201230:	f1dfe0ef          	jal	ra,ffffffffc020014c <cprintf>
     assert(n > 0);
 ffffffffc0201234:	45c1                	li	a1,16
@@ -2295,29 +2295,29 @@ ffffffffc0201240:	bd0ff0ef          	jal	ra,ffffffffc0200610 <buddy_system_free_
 ffffffffc0201244:	989ff0ef          	jal	ra,ffffffffc0200bcc <show_buddy_array.constprop.0>
     cprintf("3. 验证最终合并结果...\n");
 ffffffffc0201248:	00002517          	auipc	a0,0x2
-ffffffffc020124c:	b4050513          	addi	a0,a0,-1216 # ffffffffc0202d88 <etext+0xf22>
+ffffffffc020124c:	b0850513          	addi	a0,a0,-1272 # ffffffffc0202d50 <etext+0xeea>
 ffffffffc0201250:	efdfe0ef          	jal	ra,ffffffffc020014c <cprintf>
     show_buddy_array(0, MAX_ORDER);
 ffffffffc0201254:	979ff0ef          	jal	ra,ffffffffc0200bcc <show_buddy_array.constprop.0>
     cprintf("=== END TEST: MERGE CONDITION ===\n\n");
 ffffffffc0201258:	00002517          	auipc	a0,0x2
-ffffffffc020125c:	b5050513          	addi	a0,a0,-1200 # ffffffffc0202da8 <etext+0xf42>
+ffffffffc020125c:	b1850513          	addi	a0,a0,-1256 # ffffffffc0202d70 <etext+0xf0a>
 ffffffffc0201260:	eedfe0ef          	jal	ra,ffffffffc020014c <cprintf>
     cprintf("=== BEGIN TEST: ERROR CONDITION ===\n");
 ffffffffc0201264:	00002517          	auipc	a0,0x2
-ffffffffc0201268:	b6c50513          	addi	a0,a0,-1172 # ffffffffc0202dd0 <etext+0xf6a>
+ffffffffc0201268:	b3450513          	addi	a0,a0,-1228 # ffffffffc0202d98 <etext+0xf32>
 ffffffffc020126c:	ee1fe0ef          	jal	ra,ffffffffc020014c <cprintf>
     cprintf("1. 测试分配0页...\n");
 ffffffffc0201270:	00002517          	auipc	a0,0x2
-ffffffffc0201274:	b8850513          	addi	a0,a0,-1144 # ffffffffc0202df8 <etext+0xf92>
+ffffffffc0201274:	b5050513          	addi	a0,a0,-1200 # ffffffffc0202dc0 <etext+0xf5a>
 ffffffffc0201278:	ed5fe0ef          	jal	ra,ffffffffc020014c <cprintf>
     cprintf("   预期行为：触发断言失败，跳过此测试\n");
 ffffffffc020127c:	00002517          	auipc	a0,0x2
-ffffffffc0201280:	b9450513          	addi	a0,a0,-1132 # ffffffffc0202e10 <etext+0xfaa>
+ffffffffc0201280:	b5c50513          	addi	a0,a0,-1188 # ffffffffc0202dd8 <etext+0xf72>
 ffffffffc0201284:	ec9fe0ef          	jal	ra,ffffffffc020014c <cprintf>
     cprintf("2. 测试分配极大值...\n");
 ffffffffc0201288:	00002517          	auipc	a0,0x2
-ffffffffc020128c:	bc050513          	addi	a0,a0,-1088 # ffffffffc0202e48 <etext+0xfe2>
+ffffffffc020128c:	b8850513          	addi	a0,a0,-1144 # ffffffffc0202e10 <etext+0xfaa>
 ffffffffc0201290:	ebdfe0ef          	jal	ra,ffffffffc020014c <cprintf>
     if (n > buddy_sys.nr_free) {
 ffffffffc0201294:	1084a603          	lw	a2,264(s1)
@@ -2333,7 +2333,7 @@ ffffffffc02012b0:	86450513          	addi	a0,a0,-1948 # ffffffffc0202b10 <etext+
 ffffffffc02012b4:	e99fe0ef          	jal	ra,ffffffffc020014c <cprintf>
     cprintf("3. 测试边界值分配...\n");
 ffffffffc02012b8:	00002517          	auipc	a0,0x2
-ffffffffc02012bc:	bc050513          	addi	a0,a0,-1088 # ffffffffc0202e78 <etext+0x1012>
+ffffffffc02012bc:	b8850513          	addi	a0,a0,-1144 # ffffffffc0202e40 <etext+0xfda>
 ffffffffc02012c0:	e8dfe0ef          	jal	ra,ffffffffc020014c <cprintf>
     if (n > buddy_sys.nr_free) {
 ffffffffc02012c4:	1084a603          	lw	a2,264(s1)
@@ -2347,11 +2347,11 @@ ffffffffc02012d4:	4a051363          	bnez	a0,ffffffffc020177a <buddy_system_comp
 ffffffffc02012d8:	65a1                	lui	a1,0x8
 ffffffffc02012da:	0585                	addi	a1,a1,1
 ffffffffc02012dc:	00002517          	auipc	a0,0x2
-ffffffffc02012e0:	bbc50513          	addi	a0,a0,-1092 # ffffffffc0202e98 <etext+0x1032>
+ffffffffc02012e0:	b8450513          	addi	a0,a0,-1148 # ffffffffc0202e60 <etext+0xffa>
 ffffffffc02012e4:	e69fe0ef          	jal	ra,ffffffffc020014c <cprintf>
     cprintf("4. 测试内存耗尽情况...\n");
 ffffffffc02012e8:	00002517          	auipc	a0,0x2
-ffffffffc02012ec:	bd850513          	addi	a0,a0,-1064 # ffffffffc0202ec0 <etext+0x105a>
+ffffffffc02012ec:	ba050513          	addi	a0,a0,-1120 # ffffffffc0202e88 <etext+0x1022>
 ffffffffc02012f0:	e5dfe0ef          	jal	ra,ffffffffc020014c <cprintf>
     size_t free_pages = buddy_sys.nr_free;
 ffffffffc02012f4:	1084a983          	lw	s3,264(s1)
@@ -2368,7 +2368,7 @@ ffffffffc020130c:	0e050763          	beqz	a0,ffffffffc02013fa <buddy_system_comp
         cprintf("   成功分配所有内存: %u 页\n", (unsigned int)free_pages);
 ffffffffc0201310:	85ce                	mv	a1,s3
 ffffffffc0201312:	00002517          	auipc	a0,0x2
-ffffffffc0201316:	bce50513          	addi	a0,a0,-1074 # ffffffffc0202ee0 <etext+0x107a>
+ffffffffc0201316:	b9650513          	addi	a0,a0,-1130 # ffffffffc0202ea8 <etext+0x1042>
 ffffffffc020131a:	e33fe0ef          	jal	ra,ffffffffc020014c <cprintf>
     if (n > buddy_sys.nr_free) {
 ffffffffc020131e:	1084a783          	lw	a5,264(s1)
@@ -2379,7 +2379,7 @@ ffffffffc0201328:	d4aff0ef          	jal	ra,ffffffffc0200872 <buddy_system_alloc
 ffffffffc020132c:	4a051763          	bnez	a0,ffffffffc02017da <buddy_system_comprehensive_check+0xb7c>
         cprintf("   内存耗尽时分配失败，符合预期\n");
 ffffffffc0201330:	00002517          	auipc	a0,0x2
-ffffffffc0201334:	bf050513          	addi	a0,a0,-1040 # ffffffffc0202f20 <etext+0x10ba>
+ffffffffc0201334:	bb850513          	addi	a0,a0,-1096 # ffffffffc0202ee8 <etext+0x1082>
 ffffffffc0201338:	e15fe0ef          	jal	ra,ffffffffc020014c <cprintf>
     assert(n > 0);
 ffffffffc020133c:	85ca                	mv	a1,s2
@@ -2387,7 +2387,7 @@ ffffffffc020133e:	8522                	mv	a0,s0
 ffffffffc0201340:	ad0ff0ef          	jal	ra,ffffffffc0200610 <buddy_system_free_pages.part.0>
     cprintf("=== END TEST: ERROR CONDITION ===\n\n");
 ffffffffc0201344:	00002517          	auipc	a0,0x2
-ffffffffc0201348:	c5450513          	addi	a0,a0,-940 # ffffffffc0202f98 <etext+0x1132>
+ffffffffc0201348:	c1c50513          	addi	a0,a0,-996 # ffffffffc0202f60 <etext+0x10fa>
 ffffffffc020134c:	e01fe0ef          	jal	ra,ffffffffc020014c <cprintf>
     buddy_system_check_stress_condition();
     buddy_system_check_merge_condition();
@@ -2397,14 +2397,14 @@ ffffffffc020134c:	e01fe0ef          	jal	ra,ffffffffc020014c <cprintf>
     cprintf("最终空闲页数: %u\n", buddy_sys.nr_free);
 ffffffffc0201350:	1084a583          	lw	a1,264(s1)
 ffffffffc0201354:	00002517          	auipc	a0,0x2
-ffffffffc0201358:	c6c50513          	addi	a0,a0,-916 # ffffffffc0202fc0 <etext+0x115a>
+ffffffffc0201358:	c3450513          	addi	a0,a0,-972 # ffffffffc0202f88 <etext+0x1122>
 ffffffffc020135c:	df1fe0ef          	jal	ra,ffffffffc020014c <cprintf>
     assert(buddy_sys.nr_free == initial_free);
 ffffffffc0201360:	1084a783          	lw	a5,264(s1)
 ffffffffc0201364:	39979b63          	bne	a5,s9,ffffffffc02016fa <buddy_system_comprehensive_check+0xa9c>
     cprintf("✓ 内存泄漏检查通过\n");
 ffffffffc0201368:	00002517          	auipc	a0,0x2
-ffffffffc020136c:	c9850513          	addi	a0,a0,-872 # ffffffffc0203000 <etext+0x119a>
+ffffffffc020136c:	c6050513          	addi	a0,a0,-928 # ffffffffc0202fc8 <etext+0x1162>
 ffffffffc0201370:	dddfe0ef          	jal	ra,ffffffffc020014c <cprintf>
 
     cprintf("**************************************************\n");
@@ -2413,7 +2413,7 @@ ffffffffc0201378:	0fc50513          	addi	a0,a0,252 # ffffffffc0202470 <etext+0x
 ffffffffc020137c:	dd1fe0ef          	jal	ra,ffffffffc020014c <cprintf>
     cprintf("***         ALL TESTS PASSED SUCCESSFULLY!         ***\n");
 ffffffffc0201380:	00002517          	auipc	a0,0x2
-ffffffffc0201384:	ca050513          	addi	a0,a0,-864 # ffffffffc0203020 <etext+0x11ba>
+ffffffffc0201384:	c6850513          	addi	a0,a0,-920 # ffffffffc0202fe8 <etext+0x1182>
 ffffffffc0201388:	dc5fe0ef          	jal	ra,ffffffffc020014c <cprintf>
     cprintf("**************************************************\n");
 }
@@ -2461,7 +2461,7 @@ ffffffffc02013f4:	d59fe0ef          	jal	ra,ffffffffc020014c <cprintf>
 ffffffffc02013f8:	b93d                	j	ffffffffc0201036 <buddy_system_comprehensive_check+0x3d8>
         cprintf("   无法一次性分配所有内存，跳过内存耗尽测试\n");
 ffffffffc02013fa:	00002517          	auipc	a0,0x2
-ffffffffc02013fe:	b5650513          	addi	a0,a0,-1194 # ffffffffc0202f50 <etext+0x10ea>
+ffffffffc02013fe:	b1e50513          	addi	a0,a0,-1250 # ffffffffc0202f18 <etext+0x10b2>
 ffffffffc0201402:	d4bfe0ef          	jal	ra,ffffffffc020014c <cprintf>
 ffffffffc0201406:	bf3d                	j	ffffffffc0201344 <buddy_system_comprehensive_check+0x6e6>
         cprintf("buddy_system: allocation failed, request %u pages, but only %u free\n",
@@ -2705,7 +2705,7 @@ ffffffffc02016f2:	b1a50513          	addi	a0,a0,-1254 # ffffffffc0202208 <etext+
 ffffffffc02016f6:	acdfe0ef          	jal	ra,ffffffffc02001c2 <__panic>
     assert(buddy_sys.nr_free == initial_free);
 ffffffffc02016fa:	00002697          	auipc	a3,0x2
-ffffffffc02016fe:	8de68693          	addi	a3,a3,-1826 # ffffffffc0202fd8 <etext+0x1172>
+ffffffffc02016fe:	8a668693          	addi	a3,a3,-1882 # ffffffffc0202fa0 <etext+0x113a>
 ffffffffc0201702:	00001617          	auipc	a2,0x1
 ffffffffc0201706:	aee60613          	addi	a2,a2,-1298 # ffffffffc02021f0 <etext+0x38a>
 ffffffffc020170a:	29200593          	li	a1,658
@@ -2759,7 +2759,7 @@ ffffffffc02017b2:	a5a50513          	addi	a0,a0,-1446 # ffffffffc0202208 <etext+
 ffffffffc02017b6:	a0dfe0ef          	jal	ra,ffffffffc02001c2 <__panic>
     assert(p_huge == NULL);
 ffffffffc02017ba:	00001697          	auipc	a3,0x1
-ffffffffc02017be:	6ae68693          	addi	a3,a3,1710 # ffffffffc0202e68 <etext+0x1002>
+ffffffffc02017be:	67668693          	addi	a3,a3,1654 # ffffffffc0202e30 <etext+0xfca>
 ffffffffc02017c2:	00001617          	auipc	a2,0x1
 ffffffffc02017c6:	a2e60613          	addi	a2,a2,-1490 # ffffffffc02021f0 <etext+0x38a>
 ffffffffc02017ca:	25b00593          	li	a1,603
@@ -2768,7 +2768,7 @@ ffffffffc02017d2:	a3a50513          	addi	a0,a0,-1478 # ffffffffc0202208 <etext+
 ffffffffc02017d6:	9edfe0ef          	jal	ra,ffffffffc02001c2 <__panic>
         assert(p_no_memory == NULL);
 ffffffffc02017da:	00001697          	auipc	a3,0x1
-ffffffffc02017de:	72e68693          	addi	a3,a3,1838 # ffffffffc0202f08 <etext+0x10a2>
+ffffffffc02017de:	6f668693          	addi	a3,a3,1782 # ffffffffc0202ed0 <etext+0x106a>
 ffffffffc02017e2:	00001617          	auipc	a2,0x1
 ffffffffc02017e6:	a0e60613          	addi	a2,a2,-1522 # ffffffffc02021f0 <etext+0x38a>
 ffffffffc02017ea:	26d00593          	li	a1,621
@@ -2784,7 +2784,7 @@ static void check_alloc_page(void);
 static void init_pmm_manager(void) {
     pmm_manager = &buddy_system_pmm_manager; //默认是default，这里要改成相应的
 ffffffffc02017fa:	00002797          	auipc	a5,0x2
-ffffffffc02017fe:	87e78793          	addi	a5,a5,-1922 # ffffffffc0203078 <buddy_system_pmm_manager>
+ffffffffc02017fe:	84678793          	addi	a5,a5,-1978 # ffffffffc0203040 <buddy_system_pmm_manager>
     cprintf("memory management: %s\n", pmm_manager->name);
 ffffffffc0201802:	638c                	ld	a1,0(a5)
         init_memmap(pa2page(mem_begin), (mem_end - mem_begin) / PGSIZE);
@@ -2797,7 +2797,7 @@ ffffffffc0201804:	7179                	addi	sp,sp,-48
 ffffffffc0201806:	f022                	sd	s0,32(sp)
     cprintf("memory management: %s\n", pmm_manager->name);
 ffffffffc0201808:	00002517          	auipc	a0,0x2
-ffffffffc020180c:	8a850513          	addi	a0,a0,-1880 # ffffffffc02030b0 <buddy_system_pmm_manager+0x38>
+ffffffffc020180c:	87050513          	addi	a0,a0,-1936 # ffffffffc0203078 <buddy_system_pmm_manager+0x38>
     pmm_manager = &buddy_system_pmm_manager; //默认是default，这里要改成相应的
 ffffffffc0201810:	00006417          	auipc	s0,0x6
 ffffffffc0201814:	94040413          	addi	s0,s0,-1728 # ffffffffc0207150 <pmm_manager>
@@ -2834,7 +2834,7 @@ ffffffffc0201846:	14050d63          	beqz	a0,ffffffffc02019a0 <pmm_init+0x1a6>
 ffffffffc020184a:	892a                	mv	s2,a0
     cprintf("physcial memory map:\n");
 ffffffffc020184c:	00002517          	auipc	a0,0x2
-ffffffffc0201850:	8ac50513          	addi	a0,a0,-1876 # ffffffffc02030f8 <buddy_system_pmm_manager+0x80>
+ffffffffc0201850:	87450513          	addi	a0,a0,-1932 # ffffffffc02030c0 <buddy_system_pmm_manager+0x80>
 ffffffffc0201854:	8f9fe0ef          	jal	ra,ffffffffc020014c <cprintf>
     uint64_t mem_end   = mem_begin + mem_size;
 ffffffffc0201858:	01298a33          	add	s4,s3,s2
@@ -2843,7 +2843,7 @@ ffffffffc020185c:	864e                	mv	a2,s3
 ffffffffc020185e:	fffa0693          	addi	a3,s4,-1
 ffffffffc0201862:	85ca                	mv	a1,s2
 ffffffffc0201864:	00002517          	auipc	a0,0x2
-ffffffffc0201868:	8ac50513          	addi	a0,a0,-1876 # ffffffffc0203110 <buddy_system_pmm_manager+0x98>
+ffffffffc0201868:	87450513          	addi	a0,a0,-1932 # ffffffffc02030d8 <buddy_system_pmm_manager+0x98>
 ffffffffc020186c:	8e1fe0ef          	jal	ra,ffffffffc020014c <cprintf>
     npage = maxpa / PGSIZE;
 ffffffffc0201870:	c80007b7          	lui	a5,0xc8000
@@ -2906,7 +2906,7 @@ ffffffffc02018ee:	7b9c                	ld	a5,48(a5)
 ffffffffc02018f0:	9782                	jalr	a5
     cprintf("check_alloc_page() succeeded!\n");
 ffffffffc02018f2:	00002517          	auipc	a0,0x2
-ffffffffc02018f6:	8a650513          	addi	a0,a0,-1882 # ffffffffc0203198 <buddy_system_pmm_manager+0x120>
+ffffffffc02018f6:	86e50513          	addi	a0,a0,-1938 # ffffffffc0203160 <buddy_system_pmm_manager+0x120>
 ffffffffc02018fa:	853fe0ef          	jal	ra,ffffffffc020014c <cprintf>
     satp_virtual = (pte_t*)boot_page_table_sv39;
 ffffffffc02018fe:	00004597          	auipc	a1,0x4
@@ -2930,7 +2930,7 @@ ffffffffc0201928:	00006797          	auipc	a5,0x6
 ffffffffc020192c:	82c7b823          	sd	a2,-2000(a5) # ffffffffc0207158 <satp_physical>
     cprintf("satp virtual address: 0x%016lx\nsatp physical address: 0x%016lx\n", satp_virtual, satp_physical);
 ffffffffc0201930:	00002517          	auipc	a0,0x2
-ffffffffc0201934:	88850513          	addi	a0,a0,-1912 # ffffffffc02031b8 <buddy_system_pmm_manager+0x140>
+ffffffffc0201934:	85050513          	addi	a0,a0,-1968 # ffffffffc0203180 <buddy_system_pmm_manager+0x140>
 }
 ffffffffc0201938:	6145                	addi	sp,sp,48
     cprintf("satp virtual address: 0x%016lx\nsatp physical address: 0x%016lx\n", satp_virtual, satp_physical);
@@ -2972,32 +2972,32 @@ ffffffffc020196c:	9702                	jalr	a4
 ffffffffc020196e:	bfbd                	j	ffffffffc02018ec <pmm_init+0xf2>
         panic("pa2page called with invalid pa");
 ffffffffc0201970:	00001617          	auipc	a2,0x1
-ffffffffc0201974:	7f860613          	addi	a2,a2,2040 # ffffffffc0203168 <buddy_system_pmm_manager+0xf0>
+ffffffffc0201974:	7c060613          	addi	a2,a2,1984 # ffffffffc0203130 <buddy_system_pmm_manager+0xf0>
 ffffffffc0201978:	06a00593          	li	a1,106
-ffffffffc020197c:	00002517          	auipc	a0,0x2
-ffffffffc0201980:	80c50513          	addi	a0,a0,-2036 # ffffffffc0203188 <buddy_system_pmm_manager+0x110>
+ffffffffc020197c:	00001517          	auipc	a0,0x1
+ffffffffc0201980:	7d450513          	addi	a0,a0,2004 # ffffffffc0203150 <buddy_system_pmm_manager+0x110>
 ffffffffc0201984:	83ffe0ef          	jal	ra,ffffffffc02001c2 <__panic>
     uintptr_t freemem = PADDR((uintptr_t)pages + sizeof(struct Page) * (npage - nbase));
 ffffffffc0201988:	00001617          	auipc	a2,0x1
-ffffffffc020198c:	7b860613          	addi	a2,a2,1976 # ffffffffc0203140 <buddy_system_pmm_manager+0xc8>
+ffffffffc020198c:	78060613          	addi	a2,a2,1920 # ffffffffc0203108 <buddy_system_pmm_manager+0xc8>
 ffffffffc0201990:	05f00593          	li	a1,95
 ffffffffc0201994:	00001517          	auipc	a0,0x1
-ffffffffc0201998:	75450513          	addi	a0,a0,1876 # ffffffffc02030e8 <buddy_system_pmm_manager+0x70>
+ffffffffc0201998:	71c50513          	addi	a0,a0,1820 # ffffffffc02030b0 <buddy_system_pmm_manager+0x70>
 ffffffffc020199c:	827fe0ef          	jal	ra,ffffffffc02001c2 <__panic>
         panic("DTB memory info not available");
 ffffffffc02019a0:	00001617          	auipc	a2,0x1
-ffffffffc02019a4:	72860613          	addi	a2,a2,1832 # ffffffffc02030c8 <buddy_system_pmm_manager+0x50>
+ffffffffc02019a4:	6f060613          	addi	a2,a2,1776 # ffffffffc0203090 <buddy_system_pmm_manager+0x50>
 ffffffffc02019a8:	04700593          	li	a1,71
 ffffffffc02019ac:	00001517          	auipc	a0,0x1
-ffffffffc02019b0:	73c50513          	addi	a0,a0,1852 # ffffffffc02030e8 <buddy_system_pmm_manager+0x70>
+ffffffffc02019b0:	70450513          	addi	a0,a0,1796 # ffffffffc02030b0 <buddy_system_pmm_manager+0x70>
 ffffffffc02019b4:	80ffe0ef          	jal	ra,ffffffffc02001c2 <__panic>
     satp_physical = PADDR(satp_virtual);
 ffffffffc02019b8:	86ae                	mv	a3,a1
 ffffffffc02019ba:	00001617          	auipc	a2,0x1
-ffffffffc02019be:	78660613          	addi	a2,a2,1926 # ffffffffc0203140 <buddy_system_pmm_manager+0xc8>
+ffffffffc02019be:	74e60613          	addi	a2,a2,1870 # ffffffffc0203108 <buddy_system_pmm_manager+0xc8>
 ffffffffc02019c2:	07a00593          	li	a1,122
 ffffffffc02019c6:	00001517          	auipc	a0,0x1
-ffffffffc02019ca:	72250513          	addi	a0,a0,1826 # ffffffffc02030e8 <buddy_system_pmm_manager+0x70>
+ffffffffc02019ca:	6ea50513          	addi	a0,a0,1770 # ffffffffc02030b0 <buddy_system_pmm_manager+0x70>
 ffffffffc02019ce:	ff4fe0ef          	jal	ra,ffffffffc02001c2 <__panic>
 
 ffffffffc02019d2 <printnum>:
@@ -3050,7 +3050,7 @@ ffffffffc0201a08:	fc65                	bnez	s0,ffffffffc0201a00 <printnum+0x2e>
     putch("0123456789abcdef"[mod], putdat);
 ffffffffc0201a0a:	1a02                	slli	s4,s4,0x20
 ffffffffc0201a0c:	00001797          	auipc	a5,0x1
-ffffffffc0201a10:	7ec78793          	addi	a5,a5,2028 # ffffffffc02031f8 <buddy_system_pmm_manager+0x180>
+ffffffffc0201a10:	7b478793          	addi	a5,a5,1972 # ffffffffc02031c0 <buddy_system_pmm_manager+0x180>
 ffffffffc0201a14:	020a5a13          	srli	s4,s4,0x20
 ffffffffc0201a18:	9a3e                	add	s4,s4,a5
 }
@@ -3116,7 +3116,7 @@ ffffffffc0201a62:	02500993          	li	s3,37
         width = precision = -1;
 ffffffffc0201a66:	5b7d                	li	s6,-1
 ffffffffc0201a68:	00001a97          	auipc	s5,0x1
-ffffffffc0201a6c:	7c4a8a93          	addi	s5,s5,1988 # ffffffffc020322c <buddy_system_pmm_manager+0x1b4>
+ffffffffc0201a6c:	78ca8a93          	addi	s5,s5,1932 # ffffffffc02031f4 <buddy_system_pmm_manager+0x1b4>
         case 'e':
             err = va_arg(ap, int);
             if (err < 0) {
@@ -3124,7 +3124,7 @@ ffffffffc0201a6c:	7c4a8a93          	addi	s5,s5,1988 # ffffffffc020322c <buddy_s
             }
             if (err > MAXERROR || (p = error_string[err]) == NULL) {
 ffffffffc0201a70:	00002b97          	auipc	s7,0x2
-ffffffffc0201a74:	998b8b93          	addi	s7,s7,-1640 # ffffffffc0203408 <error_string>
+ffffffffc0201a74:	960b8b93          	addi	s7,s7,-1696 # ffffffffc02033d0 <error_string>
         while ((ch = *(unsigned char *)fmt ++) != '%') {
 ffffffffc0201a78:	000d4503          	lbu	a0,0(s10)
 ffffffffc0201a7c:	001d0413          	addi	s0,s10,1
@@ -3437,21 +3437,21 @@ ffffffffc0201cc2:	cb99                	beqz	a5,ffffffffc0201cd8 <vprintfmt+0x29a
                 printfmt(putch, putdat, "%s", p);
 ffffffffc0201cc4:	86be                	mv	a3,a5
 ffffffffc0201cc6:	00001617          	auipc	a2,0x1
-ffffffffc0201cca:	56260613          	addi	a2,a2,1378 # ffffffffc0203228 <buddy_system_pmm_manager+0x1b0>
+ffffffffc0201cca:	52a60613          	addi	a2,a2,1322 # ffffffffc02031f0 <buddy_system_pmm_manager+0x1b0>
 ffffffffc0201cce:	85a6                	mv	a1,s1
 ffffffffc0201cd0:	854a                	mv	a0,s2
 ffffffffc0201cd2:	0ce000ef          	jal	ra,ffffffffc0201da0 <printfmt>
 ffffffffc0201cd6:	b34d                	j	ffffffffc0201a78 <vprintfmt+0x3a>
                 printfmt(putch, putdat, "error %d", err);
 ffffffffc0201cd8:	00001617          	auipc	a2,0x1
-ffffffffc0201cdc:	54060613          	addi	a2,a2,1344 # ffffffffc0203218 <buddy_system_pmm_manager+0x1a0>
+ffffffffc0201cdc:	50860613          	addi	a2,a2,1288 # ffffffffc02031e0 <buddy_system_pmm_manager+0x1a0>
 ffffffffc0201ce0:	85a6                	mv	a1,s1
 ffffffffc0201ce2:	854a                	mv	a0,s2
 ffffffffc0201ce4:	0bc000ef          	jal	ra,ffffffffc0201da0 <printfmt>
 ffffffffc0201ce8:	bb41                	j	ffffffffc0201a78 <vprintfmt+0x3a>
                 p = "(null)";
 ffffffffc0201cea:	00001417          	auipc	s0,0x1
-ffffffffc0201cee:	52640413          	addi	s0,s0,1318 # ffffffffc0203210 <buddy_system_pmm_manager+0x198>
+ffffffffc0201cee:	4ee40413          	addi	s0,s0,1262 # ffffffffc02031d8 <buddy_system_pmm_manager+0x198>
                 for (width -= strnlen(p, precision); width > 0; width --) {
 ffffffffc0201cf2:	85e2                	mv	a1,s8
 ffffffffc0201cf4:	8522                	mv	a0,s0
@@ -3514,14 +3514,14 @@ ffffffffc0201d6c:	02d00693          	li	a3,45
 ffffffffc0201d70:	f6d79de3          	bne	a5,a3,ffffffffc0201cea <vprintfmt+0x2ac>
                 p = "(null)";
 ffffffffc0201d74:	00001417          	auipc	s0,0x1
-ffffffffc0201d78:	49c40413          	addi	s0,s0,1180 # ffffffffc0203210 <buddy_system_pmm_manager+0x198>
+ffffffffc0201d78:	46440413          	addi	s0,s0,1124 # ffffffffc02031d8 <buddy_system_pmm_manager+0x198>
             for (; (ch = *p ++) != '\0' && (precision < 0 || -- precision >= 0); width --) {
 ffffffffc0201d7c:	02800793          	li	a5,40
 ffffffffc0201d80:	02800513          	li	a0,40
 ffffffffc0201d84:	00140a13          	addi	s4,s0,1
 ffffffffc0201d88:	bd6d                	j	ffffffffc0201c42 <vprintfmt+0x204>
 ffffffffc0201d8a:	00001a17          	auipc	s4,0x1
-ffffffffc0201d8e:	487a0a13          	addi	s4,s4,1159 # ffffffffc0203211 <buddy_system_pmm_manager+0x199>
+ffffffffc0201d8e:	44fa0a13          	addi	s4,s4,1103 # ffffffffc02031d9 <buddy_system_pmm_manager+0x199>
 ffffffffc0201d92:	02800513          	li	a0,40
 ffffffffc0201d96:	02800793          	li	a5,40
                 if (altflag && (ch < ' ' || ch > '~')) {
