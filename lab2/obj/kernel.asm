@@ -2782,7 +2782,7 @@ static void check_alloc_page(void);
 
 // init_pmm_manager - initialize a pmm_manager instance
 static void init_pmm_manager(void) {
-    pmm_manager = &buddy_system_pmm_manager; //默认是default，这里要改成相应的
+    pmm_manager = &buddy_system_pmm_manager;   //要改成对应的
 ffffffffc02017fa:	00002797          	auipc	a5,0x2
 ffffffffc02017fe:	84678793          	addi	a5,a5,-1978 # ffffffffc0203040 <buddy_system_pmm_manager>
     cprintf("memory management: %s\n", pmm_manager->name);
@@ -2798,7 +2798,7 @@ ffffffffc0201806:	f022                	sd	s0,32(sp)
     cprintf("memory management: %s\n", pmm_manager->name);
 ffffffffc0201808:	00002517          	auipc	a0,0x2
 ffffffffc020180c:	87050513          	addi	a0,a0,-1936 # ffffffffc0203078 <buddy_system_pmm_manager+0x38>
-    pmm_manager = &buddy_system_pmm_manager; //默认是default，这里要改成相应的
+    pmm_manager = &buddy_system_pmm_manager;   //要改成对应的
 ffffffffc0201810:	00006417          	auipc	s0,0x6
 ffffffffc0201814:	94040413          	addi	s0,s0,-1728 # ffffffffc0207150 <pmm_manager>
 void pmm_init(void) {
@@ -2807,7 +2807,7 @@ ffffffffc020181a:	ec26                	sd	s1,24(sp)
 ffffffffc020181c:	e44e                	sd	s3,8(sp)
 ffffffffc020181e:	e84a                	sd	s2,16(sp)
 ffffffffc0201820:	e052                	sd	s4,0(sp)
-    pmm_manager = &buddy_system_pmm_manager; //默认是default，这里要改成相应的
+    pmm_manager = &buddy_system_pmm_manager;   //要改成对应的
 ffffffffc0201822:	e01c                	sd	a5,0(s0)
     cprintf("memory management: %s\n", pmm_manager->name);
 ffffffffc0201824:	929fe0ef          	jal	ra,ffffffffc020014c <cprintf>
