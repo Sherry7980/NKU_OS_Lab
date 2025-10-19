@@ -56,150 +56,146 @@
  */
 static free_area_t free_area;
 
-#define free_list (free_area.free_list) //ÄÚ´æ¿ÕÏĞ¿éÁ´±í
-#define nr_free (free_area.nr_free)     //¿ÕÏĞÒ³Ãæ×ÜÊı
+#define free_list (free_area.free_list) //å†…å­˜ç©ºé—²å—é“¾è¡¨
+#define nr_free (free_area.nr_free)     //ç©ºé—²é¡µé¢æ€»æ•°
 
-static void
-default_init(void) { //¸Ãº¯ÊıÓÃÓÚ³õÊ¼»¯Ë«ÏòÁ´±íµÄÍ·½ÚµãºÍ¿ÕÏĞÒ³Ãæ¼ÆÊıÆ÷
+static void 
+default_init(void) {                    //è¯¥å‡½æ•°ç”¨äºåˆå§‹åŒ–åŒå‘é“¾è¡¨çš„å¤´èŠ‚ç‚¹å’Œç©ºé—²é¡µé¢è®¡æ•°å™¨ã€‚
     list_init(&free_list);
     nr_free = 0;
 }
 
 static void
-default_init_memmap(struct Page* base, size_t n) {
-    assert(n > 0);                      //È·±£Òª³õÊ¼»¯µÄÒ³ÃæÊıÁ¿´óÓÚ0
-    struct Page* p = base;              //´´½¨±éÀúÖ¸Õëp£¬Ö¸ÏòÆğÊ¼Ò³Ãæ
-    for (; p != base + n; p++) {       //base + n ÊÇÖ¸ÕëÔËËã£¬±íÊ¾´Ó base ¿ªÊ¼ÏòºóÒÆ¶¯ n ¸ö struct Page µÄÎ»ÖÃ£¬Ñ­»·»á±éÀú´Ó base µ½ base + n - 1 µÄËùÓĞÒ³Ãæ
-        assert(PageReserved(p));       //¼ì²éÒ³ÃæÊÇ·ñ±»±ê¼ÇÎª"±£Áô"×´Ì¬
-        p->flags = p->property = 0;    //½«Ò³ÃæµÄËùÓĞ±êÖ¾Î»ºÍÊôĞÔÇåÁã
-        set_page_ref(p, 0);            //½«Ò³ÃæµÄÒıÓÃ´ÎÊıÉèÎª0
+default_init_memmap(struct Page *base, size_t n) {
+    assert(n > 0);                     //ç¡®ä¿è¦åˆå§‹åŒ–çš„é¡µé¢æ•°é‡å¤§äº0
+    struct Page *p = base;             //åˆ›å»ºéå†æŒ‡é’ˆpï¼ŒæŒ‡å‘èµ·å§‹é¡µé¢
+    for (; p != base + n; p ++) {      //base + n æ˜¯æŒ‡é’ˆè¿ç®—ï¼Œè¡¨ç¤ºä» base å¼€å§‹å‘åç§»åŠ¨ n ä¸ª struct Page çš„ä½ç½®ï¼Œå¾ªç¯ä¼šéå†ä» base åˆ° base + n - 1 çš„æ‰€æœ‰é¡µé¢
+        assert(PageReserved(p));       //æ£€æŸ¥é¡µé¢æ˜¯å¦è¢«æ ‡è®°ä¸º"ä¿ç•™"çŠ¶æ€
+        p->flags = p->property = 0;    //å°†é¡µé¢çš„æ‰€æœ‰æ ‡å¿—ä½å’Œå±æ€§æ¸…é›¶
+        set_page_ref(p, 0);            //å°†é¡µé¢çš„å¼•ç”¨æ¬¡æ•°è®¾ä¸º0
     }
-    base->property = n;                //ÔÚÊ×¸öÒ³ÃæµÄpropertyÊôĞÔÉèÎªn£¬¼´¿ÕÏĞ¿éµÄ×Ü´óĞ¡
-    SetPageProperty(base);             //ÉèÖÃÒ³ÃæµÄÊôĞÔÖµ
-    nr_free += n;                      //¸üĞÂ¿ÕÏĞÒ³ÃæÊıÁ¿£¨¼ÓÁËn£¬ÒòÎª¸Õ²Å³õÊ¼»¯ÁËn¸ö¿ÕÏĞÒ³Ãæ£©
-    if (list_empty(&free_list)) {      //ÅĞ¶Ï¸ÃÁĞ±íÊÇ·ñÎª¿Õ
-        list_add(&free_list, &(base->page_link));  //Èô¿Õ£¬½«ÆğÊ¼Ò³ÃæµÄÁ´±í½ÚµãÌí¼Óµ½Á´±íÖĞ
-    }
-    else {                           //Èô²»¿Õ£¬ÔòÒª°´µØÖ·ÅÅĞò²åÈë
-        list_entry_t* le = &free_list; //ÏÈ³õÊ¼»¯Ò»¸öÖ¸ÕëÖ¸Ïò¿ÕÏĞÁ´±íÍ·
-        while ((le = list_next(le)) != &free_list) {  //Ò»Ö±ÏòºóÕÒ£¬°´ÎïÀíµØÖ·´ÓĞ¡µ½´óÅÅÁĞ
+    base->property = n;                //åœ¨é¦–ä¸ªé¡µé¢çš„propertyå±æ€§è®¾ä¸ºnï¼Œå³ç©ºé—²å—çš„æ€»å¤§å°
+    SetPageProperty(base);             //è®¾ç½®é¡µé¢çš„å±æ€§å€¼
+    nr_free += n;                      //æ›´æ–°ç©ºé—²é¡µé¢æ•°é‡ï¼ˆåŠ äº†nï¼Œå› ä¸ºåˆšæ‰åˆå§‹åŒ–äº†nä¸ªç©ºé—²é¡µé¢ï¼‰
+    if (list_empty(&free_list)) {      //åˆ¤æ–­è¯¥åˆ—è¡¨æ˜¯å¦ä¸ºç©º
+        list_add(&free_list, &(base->page_link));  //è‹¥ç©ºï¼Œå°†èµ·å§‹é¡µé¢çš„é“¾è¡¨èŠ‚ç‚¹æ·»åŠ åˆ°é“¾è¡¨ä¸­
+    } else {                           //è‹¥ä¸ç©ºï¼Œåˆ™è¦æŒ‰åœ°å€æ’åºæ’å…¥
+        list_entry_t* le = &free_list; //å…ˆåˆå§‹åŒ–ä¸€ä¸ªæŒ‡é’ˆæŒ‡å‘ç©ºé—²é“¾è¡¨å¤´
+        while ((le = list_next(le)) != &free_list) {  //ä¸€ç›´å‘åæ‰¾ï¼ŒæŒ‰ç‰©ç†åœ°å€ä»å°åˆ°å¤§æ’åˆ—
             struct Page* page = le2page(le, page_link);
-            if (base < page) {         //ÈôĞÂÒ³ÃæµÄÆğÊ¼µØÖ·baseĞ¡ÓÚµ±Ç°±éÀúµ½µÄÒ³ÃæpageµÄµØÖ·£¬ËµÃ÷ÕÒµ½ÁËºÏÊÊ²åÈëÎ»ÖÃ
-                list_add_before(le, &(base->page_link));  //ÔÚµ±Ç°Î»ÖÃµÄÇ°Ãæ²åÈëĞÂ½Úµã
+            if (base < page) {         //è‹¥æ–°é¡µé¢çš„èµ·å§‹åœ°å€baseå°äºå½“å‰éå†åˆ°çš„é¡µé¢pageçš„åœ°å€ï¼Œè¯´æ˜æ‰¾åˆ°äº†åˆé€‚æ’å…¥ä½ç½®
+                list_add_before(le, &(base->page_link));  //åœ¨å½“å‰ä½ç½®çš„å‰é¢æ’å…¥æ–°èŠ‚ç‚¹
                 break;
-            }
-            else if (list_next(le) == &free_list) {  //Èç²»ÊÇ£¬Ôò²åÈëµ½Ä©Î²
+            } else if (list_next(le) == &free_list) {  //å¦‚ä¸æ˜¯ï¼Œåˆ™æ’å…¥åˆ°æœ«å°¾
                 list_add(le, &(base->page_link));
             }
         }
     }
 }
 
-static struct Page*
-default_alloc_pages(size_t n) {           //²ÎÊıÎªÇëÇó·ÖÅäµÄÁ¬ĞøÒ³ÃæÊıÁ¿
-    assert(n > 0);                        //È·±£ÇëÇóµÄÒ³ÃæÊı´óÓÚ0
-    if (n > nr_free) {                    //¿ìËÙ¼ì²éÏµÍ³ÊÇ·ñÓĞ×ã¹»µÄ¿ÕÏĞÒ³Ãæ
-        return NULL;                      //Èç¹ûÇëÇóµÄÊıÁ¿´óÓÚÏµÍ³ÖĞ¿ÕÏĞ¶ÑÊıÁ¿£¬Ôò·µ»ØNULL
+static struct Page *
+default_alloc_pages(size_t n) {           //å‚æ•°ä¸ºè¯·æ±‚åˆ†é…çš„è¿ç»­é¡µé¢æ•°é‡
+    assert(n > 0);                        //ç¡®ä¿è¯·æ±‚çš„é¡µé¢æ•°å¤§äº0
+    if (n > nr_free) {                    //å¿«é€Ÿæ£€æŸ¥ç³»ç»Ÿæ˜¯å¦æœ‰è¶³å¤Ÿçš„ç©ºé—²é¡µé¢
+        return NULL;                      //å¦‚æœè¯·æ±‚çš„æ•°é‡å¤§äºç³»ç»Ÿä¸­ç©ºé—²å †æ•°é‡ï¼Œåˆ™è¿”å›NULL
     }
-    struct Page* page = NULL;             //ÓÃÓÚ¼ÇÂ¼ÕÒµ½µÄºÏÊÊÒ³Ãæ
-    list_entry_t* le = &free_list;        //±éÀúÖ¸Õë£¬´ÓÁ´±íÍ·¿ªÊ¼
-    while ((le = list_next(le)) != &free_list) {  //»ñÈ¡ÏÂÒ»¸ö½Úµã£¬ÇÒÏÂÒ»¸ö²»ÄÜÊÇÁ´±íÍ·£¬·ñÔò¾Í»ØÈ¥ÁË
-        struct Page* p = le2page(le, page_link);  //½«Á´±í½Úµã×ª»»Îª¶ÔÓ¦µÄPage½á¹¹ÌåÖ¸Õë
-        if (p->property >= n) {           //¼ì²éµ±Ç°¿ÕÏĞ¿éµÄ´óĞ¡ÊÇ·ñÂú×ãĞèÇó
-            page = p;                     //¼ÇÂ¼ÕÒµ½µÄºÏÊÊÒ³Ãæ
-            break;
+    struct Page *page = NULL;             //ç”¨äºè®°å½•æ‰¾åˆ°çš„åˆé€‚é¡µé¢
+    list_entry_t *le = &free_list;        //éå†æŒ‡é’ˆï¼Œä»é“¾è¡¨å¤´å¼€å§‹
+    while ((le = list_next(le)) != &free_list) {  //è·å–ä¸‹ä¸€ä¸ªèŠ‚ç‚¹ï¼Œä¸”ä¸‹ä¸€ä¸ªä¸èƒ½æ˜¯é“¾è¡¨å¤´ï¼Œå¦åˆ™å°±å›å»äº†
+        struct Page *p = le2page(le, page_link);  //å°†é“¾è¡¨èŠ‚ç‚¹è½¬æ¢ä¸ºå¯¹åº”çš„Pageç»“æ„ä½“æŒ‡é’ˆ
+        if (p->property >= n) {           //æ£€æŸ¥å½“å‰ç©ºé—²å—çš„å¤§å°æ˜¯å¦æ»¡è¶³éœ€æ±‚
+            page = p;                     //è®°å½•æ‰¾åˆ°çš„åˆé€‚é¡µé¢
+            break;                        
         }
     }
-    if (page != NULL) {                   //È·ÈÏÊÇ·ñÕÒµ½ÁËºÏÊÊµÄ¿ÕÏĞ¿é£¬Èç¹û page ÈÔÈ»ÊÇ NULL£¬ËµÃ÷Ã»ÓĞ×ã¹»´óµÄ¿ÕÏĞ¿é
-        list_entry_t* prev = list_prev(&(page->page_link));   //»ñÈ¡µ±Ç°Ò³ÃæÔÚÁ´±íÖĞµÄÇ°Çı½Úµã
-        list_del(&(page->page_link));     //½«ÕÒµ½µÄ¿ÕÏĞ¿é´ÓÁ´±íÖĞÒÆ³ı
-        if (page->property > n) {         //¼ì²éÕÒµ½µÄ¿ÕÏĞ¿éÊÇ·ñ´óÓÚÇëÇóµÄ´óĞ¡£¬Èç¹ûÕıºÃÏàµÈÔò²»ĞèÒª·Ö¸î£»Èç¹û¸ü´óÔòĞèÒª·Ö¸îÊ£Óà²¿·Ö
-            struct Page* p = page + n;    //page + n ±íÊ¾´Ó page ¿ªÊ¼ÏòºóÒÆ¶¯ n ¸ö struct Page µÄÎ»ÖÃ
-            p->property = page->property - n;   //ÉèÖÃÊ£Óà¿éµÄ´óĞ¡
-            SetPageProperty(p);           //±ê¼ÇÊ£Óà¿éµÄµÚÒ»¸öÒ³ÃæÎª¿éÍ·Ò³Ãæ
-            list_add(prev, &(p->page_link));    //½«Ê£ÓàµÄ¿ÕÏĞ¿é²åÈëµ½Ô­Î»ÖÃµÄÇ°Çı½ÚµãºóÃæ
+    if (page != NULL) {                   //ç¡®è®¤æ˜¯å¦æ‰¾åˆ°äº†åˆé€‚çš„ç©ºé—²å—ï¼Œå¦‚æœ page ä»ç„¶æ˜¯ NULLï¼Œè¯´æ˜æ²¡æœ‰è¶³å¤Ÿå¤§çš„ç©ºé—²å—
+        list_entry_t* prev = list_prev(&(page->page_link));   //è·å–å½“å‰é¡µé¢åœ¨é“¾è¡¨ä¸­çš„å‰é©±èŠ‚ç‚¹
+        list_del(&(page->page_link));     //å°†æ‰¾åˆ°çš„ç©ºé—²å—ä»é“¾è¡¨ä¸­ç§»é™¤
+        if (page->property > n) {         //æ£€æŸ¥æ‰¾åˆ°çš„ç©ºé—²å—æ˜¯å¦å¤§äºè¯·æ±‚çš„å¤§å°ï¼Œå¦‚æœæ­£å¥½ç›¸ç­‰åˆ™ä¸éœ€è¦åˆ†å‰²ï¼›å¦‚æœæ›´å¤§åˆ™éœ€è¦åˆ†å‰²å‰©ä½™éƒ¨åˆ†
+            struct Page *p = page + n;    //page + n è¡¨ç¤ºä» page å¼€å§‹å‘åç§»åŠ¨ n ä¸ª struct Page çš„ä½ç½®
+            p->property = page->property - n;   //è®¾ç½®å‰©ä½™å—çš„å¤§å°
+            SetPageProperty(p);           //æ ‡è®°å‰©ä½™å—çš„ç¬¬ä¸€ä¸ªé¡µé¢ä¸ºå—å¤´é¡µé¢
+            list_add(prev, &(p->page_link));    //å°†å‰©ä½™çš„ç©ºé—²å—æ’å…¥åˆ°åŸä½ç½®çš„å‰é©±èŠ‚ç‚¹åé¢
         }
-        nr_free -= n;                     //¸üĞÂÈ«¾Ö¿ÕÏĞÒ³Ãæ¼ÆÊıÆ÷
-        ClearPageProperty(page);          //Çå³ı·ÖÅäÒ³ÃæµÄ PG_property ±êÖ¾
+        nr_free -= n;                     //æ›´æ–°å…¨å±€ç©ºé—²é¡µé¢è®¡æ•°å™¨
+        ClearPageProperty(page);          //æ¸…é™¤åˆ†é…é¡µé¢çš„ PG_property æ ‡å¿—
     }
-    return page;                          //·µ»Ø·ÖÅäµÄÄÚ´æ¿éÆğÊ¼Ò³ÃæÖ¸Õë
+    return page;                          //è¿”å›åˆ†é…çš„å†…å­˜å—èµ·å§‹é¡µé¢æŒ‡é’ˆ
 }
 
 static void
-default_free_pages(struct Page* base, size_t n) {
-    assert(n > 0);                        //È·±£ÊÍ·ÅµÄÒ³ÃæÊı´óÓÚ0        
-    struct Page* p = base;
-    for (; p != base + n; p++) {
-        assert(!PageReserved(p) && !PageProperty(p));    //È·±£Ò³Ãæ²»ÊÇÏµÍ³±£ÁôÒ³Ãæ£¬Ò²²»ÊÇ¿ÕÏĞ¿éµÄÍ·Ò³Ãæ
-        p->flags = 0;                     //Çå³ıÒ³Ãæ±êÖ¾
-        set_page_ref(p, 0);               //ÒıÓÃ¼ÆÊıÇåÁã
+default_free_pages(struct Page *base, size_t n) {
+    assert(n > 0);                        //ç¡®ä¿é‡Šæ”¾çš„é¡µé¢æ•°å¤§äº0        
+    struct Page *p = base;
+    for (; p != base + n; p ++) {
+        assert(!PageReserved(p) && !PageProperty(p));    //ç¡®ä¿é¡µé¢ä¸æ˜¯ç³»ç»Ÿä¿ç•™é¡µé¢ï¼Œä¹Ÿä¸æ˜¯ç©ºé—²å—çš„å¤´é¡µé¢
+        p->flags = 0;                     //æ¸…é™¤é¡µé¢æ ‡å¿—
+        set_page_ref(p, 0);               //å¼•ç”¨è®¡æ•°æ¸…é›¶
     }
-    base->property = n;                   //¼ÇÂ¼¿ÕÏĞ¿é´óĞ¡
-    SetPageProperty(base);                //±ê¼ÇÎª¿ÕÏĞ¿éÊ×Ò³Ãæ
-    nr_free += n;                         //¸üĞÂ¼ÆÊıÆ÷
+    base->property = n;                   //è®°å½•ç©ºé—²å—å¤§å°
+    SetPageProperty(base);                //æ ‡è®°ä¸ºç©ºé—²å—é¦–é¡µé¢
+    nr_free += n;                         //æ›´æ–°è®¡æ•°å™¨
 
-    if (list_empty(&free_list)) {         //²åÈë²Ù×÷£¬Óëdefault_init_memmapÖĞµÄÂß¼­ÏàÍ¬£¬²»ÔÙ×¸Êö
+    if (list_empty(&free_list)) {         //æ’å…¥æ“ä½œï¼Œä¸default_init_memmapä¸­çš„é€»è¾‘ç›¸åŒï¼Œä¸å†èµ˜è¿°
         list_add(&free_list, &(base->page_link));
-    }
-    else {
+    } else {
         list_entry_t* le = &free_list;
         while ((le = list_next(le)) != &free_list) {
             struct Page* page = le2page(le, page_link);
             if (base < page) {
                 list_add_before(le, &(base->page_link));
                 break;
-            }
-            else if (list_next(le) == &free_list) {
+            } else if (list_next(le) == &free_list) {
                 list_add(le, &(base->page_link));
             }
         }
     }
 
-    //ÏòÇ°ºÏ²¢£¨ÓëµÍµØÖ·¿éºÏ²¢£©
-    list_entry_t* le = list_prev(&(base->page_link));   //»ñÈ¡µ±Ç°¿éÔÚÁ´±íÖĞµÄÇ°Ò»¸ö½Úµã
-    if (le != &free_list) {              //È·±£Ç°Çı½Úµã²»ÊÇÁ´±íÍ·£¬¼´È·Êµ´æÔÚÇ°Ò»¸ö¿ÕÏĞ¿é
-        p = le2page(le, page_link);      //Ç°Ò»¸ö¿ÕÏĞ¿éµÄÆğÊ¼Ò³Ãæ              
-        if (p + p->property == base) {   //¼ì²éÇ°Ò»¸ö¿éµÄ½áÊøÊÇ·ñÕıºÃµÈÓÚµ±Ç°¿éµÄ¿ªÊ¼£¬propertyÊÇ¿ÕÏĞ¿éµÄ´óĞ¡
-            p->property += base->property;   //ºÏ²¢¿é´óĞ¡
-            ClearPageProperty(base);         //Çå³ıÔ­¿éÍ·±êÖ¾
-            list_del(&(base->page_link));    //´ÓÁ´±íÒÆ³ıÔ­¿é
-            base = p;                        //¸üĞÂbaseÖ¸ÏòºÏ²¢ºóµÄ¿é£¬ÎªºóĞøºÏ²¢×ö×¼±¸
+    //å‘å‰åˆå¹¶ï¼ˆä¸ä½åœ°å€å—åˆå¹¶ï¼‰
+    list_entry_t* le = list_prev(&(base->page_link));   //è·å–å½“å‰å—åœ¨é“¾è¡¨ä¸­çš„å‰ä¸€ä¸ªèŠ‚ç‚¹
+    if (le != &free_list) {              //ç¡®ä¿å‰é©±èŠ‚ç‚¹ä¸æ˜¯é“¾è¡¨å¤´ï¼Œå³ç¡®å®å­˜åœ¨å‰ä¸€ä¸ªç©ºé—²å—
+        p = le2page(le, page_link);      //å‰ä¸€ä¸ªç©ºé—²å—çš„èµ·å§‹é¡µé¢              
+        if (p + p->property == base) {   //æ£€æŸ¥å‰ä¸€ä¸ªå—çš„ç»“æŸæ˜¯å¦æ­£å¥½ç­‰äºå½“å‰å—çš„å¼€å§‹ï¼Œpropertyæ˜¯ç©ºé—²å—çš„å¤§å°
+            p->property += base->property;   //åˆå¹¶å—å¤§å°
+            ClearPageProperty(base);         //æ¸…é™¤åŸå—å¤´æ ‡å¿—
+            list_del(&(base->page_link));    //ä»é“¾è¡¨ç§»é™¤åŸå—
+            base = p;                        //æ›´æ–°baseæŒ‡å‘åˆå¹¶åçš„å—ï¼Œä¸ºåç»­åˆå¹¶åšå‡†å¤‡
         }
     }
 
-    //ÏòºóºÏ²¢£¨Óë¸ßµØÖ·¿éºÏ²¢£©
-    le = list_next(&(base->page_link)); //»ñÈ¡µ±Ç°¿éÔÚÁ´±íÖĞµÄºóÒ»¸ö½Úµã
+    //å‘ååˆå¹¶ï¼ˆä¸é«˜åœ°å€å—åˆå¹¶ï¼‰
+    le = list_next(&(base->page_link)); //è·å–å½“å‰å—åœ¨é“¾è¡¨ä¸­çš„åä¸€ä¸ªèŠ‚ç‚¹
     if (le != &free_list) {
         p = le2page(le, page_link);
-        if (base + base->property == p) {    //¼ì²éµ±Ç°¿éµÄ½áÊøÊÇ·ñÕıºÃµÈÓÚºóÒ»¸ö¿éµÄ¿ªÊ¼
-            base->property += p->property;   //ºÏ²¢¿é´óĞ¡
-            ClearPageProperty(p);            //Çå³ı±»ºÏ²¢¿éµÄÍ·±êÖ¾
-            list_del(&(p->page_link));       //´ÓÁ´±íÒÆ³ı±»ºÏ²¢¿é
+        if (base + base->property == p) {    //æ£€æŸ¥å½“å‰å—çš„ç»“æŸæ˜¯å¦æ­£å¥½ç­‰äºåä¸€ä¸ªå—çš„å¼€å§‹
+            base->property += p->property;   //åˆå¹¶å—å¤§å°
+            ClearPageProperty(p);            //æ¸…é™¤è¢«åˆå¹¶å—çš„å¤´æ ‡å¿—
+            list_del(&(p->page_link));       //ä»é“¾è¡¨ç§»é™¤è¢«åˆå¹¶å—
         }
     }
 }
 
 static size_t
-default_nr_free_pages(void) { //ÕâÊÇÒ»¸ö¼òµ¥µÄ»ñÈ¡Æ÷º¯Êı£¬ÓÃÓÚ»ñÈ¡µ±Ç°ÏµÍ³ÖĞ¿ÉÓÃµÄ¿ÕÏĞÎïÀíÒ³Ãæ×ÜÊı¡£
+default_nr_free_pages(void) {                //è¿™æ˜¯ä¸€ä¸ªç®€å•çš„è·å–å™¨å‡½æ•°ï¼Œç”¨äºè·å–å½“å‰ç³»ç»Ÿä¸­å¯ç”¨çš„ç©ºé—²ç‰©ç†é¡µé¢æ€»æ•°ã€‚
     return nr_free;
 }
 
 static void
 basic_check(void) {
-    struct Page* p0, * p1, * p2;             //·ÖÅäÈı¸öµ¥¶ÀµÄÒ³Ãæ£¬¼ì²é·ÖÅäÊÇ·ñ³É¹¦£¨·µ»ØÖµ²»ÎªNULL¼´Îª³É¹¦£©
+    struct Page *p0, *p1, *p2;             //åˆ†é…ä¸‰ä¸ªå•ç‹¬çš„é¡µé¢ï¼Œæ£€æŸ¥åˆ†é…æ˜¯å¦æˆåŠŸï¼ˆè¿”å›å€¼ä¸ä¸ºNULLå³ä¸ºæˆåŠŸï¼‰
     p0 = p1 = p2 = NULL;
     assert((p0 = alloc_page()) != NULL);
     assert((p1 = alloc_page()) != NULL);
     assert((p2 = alloc_page()) != NULL);
 
-    assert(p0 != p1 && p0 != p2 && p1 != p2);  //Ò³ÃæÎ¨Ò»ĞÔÑéÖ¤£¬È·±£Èı¸öÖ¸ÕëÖ¸Ïò²»Í¬µÄÎïÀíÒ³Ãæ
-    assert(page_ref(p0) == 0 && page_ref(p1) == 0 && page_ref(p2) == 0);                            //Ò³ÃæÒıÓÃ¼ÆÊı¼ì²é£¬page_ref(p) Ó¦¸Ã·µ»ØÒ³ÃæµÄÒıÓÃ¼ÆÊı£¬ĞÂ·ÖÅäµÄÒ³ÃæÒıÓÃ¼ÆÊıÓ¦¸ÃÎª0
+    assert(p0 != p1 && p0 != p2 && p1 != p2);  //é¡µé¢å”¯ä¸€æ€§éªŒè¯ï¼Œç¡®ä¿ä¸‰ä¸ªæŒ‡é’ˆæŒ‡å‘ä¸åŒçš„ç‰©ç†é¡µé¢
+    assert(page_ref(p0) == 0 && page_ref(p1) == 0 && page_ref(p2) == 0);                            //é¡µé¢å¼•ç”¨è®¡æ•°æ£€æŸ¥ï¼Œpage_ref(p) åº”è¯¥è¿”å›é¡µé¢çš„å¼•ç”¨è®¡æ•°ï¼Œæ–°åˆ†é…çš„é¡µé¢å¼•ç”¨è®¡æ•°åº”è¯¥ä¸º0
 
-    assert(page2pa(p0) < npage * PGSIZE);  //ÎïÀíµØÖ··¶Î§µÄÓĞĞ§ĞÔÑéÖ¤£¬È·±£·ÖÅäµÄÒ³ÃæµØÖ·²»Ô½½ç
-    assert(page2pa(p1) < npage * PGSIZE);  //page2pa(p)½«Ò³ÃæÖ¸Õë×ª»»ÎªÎïÀíµØÖ·£¬npage * PGSIZEÊÇÏµÍ³×ÜÎïÀíÄÚ´æ´óĞ¡
+    assert(page2pa(p0) < npage * PGSIZE);  //ç‰©ç†åœ°å€èŒƒå›´çš„æœ‰æ•ˆæ€§éªŒè¯ï¼Œç¡®ä¿åˆ†é…çš„é¡µé¢åœ°å€ä¸è¶Šç•Œ
+    assert(page2pa(p1) < npage * PGSIZE);  //page2pa(p)å°†é¡µé¢æŒ‡é’ˆè½¬æ¢ä¸ºç‰©ç†åœ°å€ï¼Œnpage * PGSIZEæ˜¯ç³»ç»Ÿæ€»ç‰©ç†å†…å­˜å¤§å°
     assert(page2pa(p2) < npage * PGSIZE);
 
-    list_entry_t free_list_store = free_list;  //Ä£ÄâÄÚ´æºÄ¾¡£¬²âÊÔÄÚ´æ²»×ãÊ±µÄ´¦Àí£¬³¢ÊÔ·ÖÅäÒ³ÃæÓ¦¸Ã·µ»ØNULL£¨·ÖÅäÊ§°Ü£©
+    list_entry_t free_list_store = free_list;  //æ¨¡æ‹Ÿå†…å­˜è€—å°½ï¼Œæµ‹è¯•å†…å­˜ä¸è¶³æ—¶çš„å¤„ç†ï¼Œå°è¯•åˆ†é…é¡µé¢åº”è¯¥è¿”å›NULLï¼ˆåˆ†é…å¤±è´¥ï¼‰
     list_init(&free_list);
     assert(list_empty(&free_list));
 
@@ -208,27 +204,27 @@ basic_check(void) {
 
     assert(alloc_page() == NULL);
 
-    free_page(p0);                        //Ò³ÃæÊÍ·Å²âÊÔ£¬ÊÍ·ÅÖ®Ç°·ÖÅäµÄÈı¸öÒ³Ãæ£¬¼ì²é¿ÕÏĞÒ³Ãæ¼ÆÊıÆ÷ÊÇ·ñÕıÈ·¸üĞÂÎª3
+    free_page(p0);                        //é¡µé¢é‡Šæ”¾æµ‹è¯•ï¼Œé‡Šæ”¾ä¹‹å‰åˆ†é…çš„ä¸‰ä¸ªé¡µé¢ï¼Œæ£€æŸ¥ç©ºé—²é¡µé¢è®¡æ•°å™¨æ˜¯å¦æ­£ç¡®æ›´æ–°ä¸º3
     free_page(p1);
     free_page(p2);
     assert(nr_free == 3);
 
-    assert((p0 = alloc_page()) != NULL);  //ÖØĞÂ·ÖÅä²âÊÔ£¬ÖØĞÂ·ÖÅäÈı¸öÒ³Ãæ£¬³¢ÊÔ·ÖÅäµÚËÄ¸öÒ³Ãæ£¨Ó¦¸ÃÊ§°Ü£¬ÒòÎªÖ»ÓĞÈı¸ö¿ÕÏĞÒ³Ãæ£©
+    assert((p0 = alloc_page()) != NULL);  //é‡æ–°åˆ†é…æµ‹è¯•ï¼Œé‡æ–°åˆ†é…ä¸‰ä¸ªé¡µé¢ï¼Œå°è¯•åˆ†é…ç¬¬å››ä¸ªé¡µé¢ï¼ˆåº”è¯¥å¤±è´¥ï¼Œå› ä¸ºåªæœ‰ä¸‰ä¸ªç©ºé—²é¡µé¢ï¼‰
     assert((p1 = alloc_page()) != NULL);
     assert((p2 = alloc_page()) != NULL);
 
     assert(alloc_page() == NULL);
 
-    //Á´±í×´Ì¬ºÍ·ÖÅäË³Ğò²âÊÔ£¬ÑéÖ¤¿ÕÏĞÁ´±í×´Ì¬ºÍ·ÖÅäËã·¨
-    free_page(p0);                        //ÊÍ·ÅÒ»¸öÒ³Ãæ£¬Á´±í²»Ó¦¸ÃÎª¿Õ                 
+    //é“¾è¡¨çŠ¶æ€å’Œåˆ†é…é¡ºåºæµ‹è¯•ï¼ŒéªŒè¯ç©ºé—²é“¾è¡¨çŠ¶æ€å’Œåˆ†é…ç®—æ³•
+    free_page(p0);                        //é‡Šæ”¾ä¸€ä¸ªé¡µé¢ï¼Œé“¾è¡¨ä¸åº”è¯¥ä¸ºç©º                 
     assert(!list_empty(&free_list));
 
-    struct Page* p;
-    assert((p = alloc_page()) == p0);     //ÑéÖ¤Ê×´ÎÊÊÓ¦Ëã·¨£º¸Õ¸ÕÊÍ·ÅµÄp0Ó¦¸ÃÔÚ¿ÕÏĞÁ´±íÖĞ£¬ÏÂÒ»´Î·ÖÅäÓ¦¸Ã·µ»Øp0
-    assert(alloc_page() == NULL);         //ÔÙ´Î·ÖÅäÓ¦¸ÃÊ§°Ü
+    struct Page *p;
+    assert((p = alloc_page()) == p0);     //éªŒè¯é¦–æ¬¡é€‚åº”ç®—æ³•ï¼šåˆšåˆšé‡Šæ”¾çš„p0åº”è¯¥åœ¨ç©ºé—²é“¾è¡¨ä¸­ï¼Œä¸‹ä¸€æ¬¡åˆ†é…åº”è¯¥è¿”å›p0
+    assert(alloc_page() == NULL);         //å†æ¬¡åˆ†é…åº”è¯¥å¤±è´¥
 
-    //»Ö¸´²âÊÔ»·¾³²¢ÇåÀí×ÊÔ´£¬nr_freeÓ¦¸ÃÎª0£¬ËùÓĞÒ³Ãæ¶¼ÒÑ·ÖÅä
-    assert(nr_free == 0);
+    //æ¢å¤æµ‹è¯•ç¯å¢ƒå¹¶æ¸…ç†èµ„æºï¼Œnr_freeåº”è¯¥ä¸º0ï¼Œæ‰€æœ‰é¡µé¢éƒ½å·²åˆ†é…
+    assert(nr_free == 0);                 
     free_list = free_list_store;
     nr_free = nr_free_store;
 
@@ -241,22 +237,22 @@ basic_check(void) {
 // NOTICE: You SHOULD NOT CHANGE basic_check, default_check functions!
 static void
 default_check(void) {
-    int count = 0, total = 0;                      //ÑéÖ¤¿ÕÏĞÁ´±íµÄÄÚ²¿Ò»ÖÂĞÔ
-    list_entry_t* le = &free_list;
+    int count = 0, total = 0;                      //éªŒè¯ç©ºé—²é“¾è¡¨çš„å†…éƒ¨ä¸€è‡´æ€§
+    list_entry_t *le = &free_list;
     while ((le = list_next(le)) != &free_list) {
-        struct Page* p = le2page(le, page_link);
+        struct Page *p = le2page(le, page_link);
         assert(PageProperty(p));
-        count++, total += p->property;
+        count ++, total += p->property;
     }
     assert(total == nr_free_pages());
 
-    basic_check();                                //ÔËĞĞ»ù´¡²âÊÔ
+    basic_check();                                //è¿è¡ŒåŸºç¡€æµ‹è¯•
 
-    struct Page* p0 = alloc_pages(5), * p1, * p2;   //´ó¿é·ÖÅä²âÊÔ
+    struct Page *p0 = alloc_pages(5), *p1, *p2;   //å¤§å—åˆ†é…æµ‹è¯•
     assert(p0 != NULL);
     assert(!PageProperty(p0));
 
-    list_entry_t free_list_store = free_list;     //ÄÚ´æºÄ¾¡»·¾³ÉèÖÃ
+    list_entry_t free_list_store = free_list;     //å†…å­˜è€—å°½ç¯å¢ƒè®¾ç½®
     list_init(&free_list);
     assert(list_empty(&free_list));
     assert(alloc_page() == NULL);
@@ -264,30 +260,30 @@ default_check(void) {
     unsigned int nr_free_store = nr_free;
     nr_free = 0;
 
-    free_pages(p0 + 2, 3);                        //²¿·ÖÊÍ·ÅºÍ·Ö¸î²âÊÔ
+    free_pages(p0 + 2, 3);                        //éƒ¨åˆ†é‡Šæ”¾å’Œåˆ†å‰²æµ‹è¯•
     assert(alloc_pages(4) == NULL);
     assert(PageProperty(p0 + 2) && p0[2].property == 3);
     assert((p1 = alloc_pages(3)) != NULL);
     assert(alloc_page() == NULL);
     assert(p0 + 2 == p1);
 
-    p2 = p0 + 1;                                  //¸´ÔÓºÏ²¢³¡¾°²âÊÔ
+    p2 = p0 + 1;                                  //å¤æ‚åˆå¹¶åœºæ™¯æµ‹è¯•
     free_page(p0);
     free_pages(p1, 3);
     assert(PageProperty(p0) && p0->property == 1);
     assert(PageProperty(p1) && p1->property == 3);
 
-    assert((p0 = alloc_page()) == p2 - 1);        //·ÖÅäË³ĞòºÍ±ß½ç²âÊÔ
+    assert((p0 = alloc_page()) == p2 - 1);        //åˆ†é…é¡ºåºå’Œè¾¹ç•Œæµ‹è¯•
     free_page(p0);
     assert((p0 = alloc_pages(2)) == p2 + 1);
 
-    free_pages(p0, 2);                            //×îÖÕºÏ²¢²âÊÔ
+    free_pages(p0, 2);                            //æœ€ç»ˆåˆå¹¶æµ‹è¯•
     free_page(p2);
 
     assert((p0 = alloc_pages(5)) != NULL);
     assert(alloc_page() == NULL);
 
-    assert(nr_free == 0);                         //×´Ì¬»Ö¸´ºÍ×îÖÕÑéÖ¤
+    assert(nr_free == 0);                         //çŠ¶æ€æ¢å¤å’Œæœ€ç»ˆéªŒè¯
     nr_free = nr_free_store;
 
     free_list = free_list_store;
@@ -295,20 +291,20 @@ default_check(void) {
 
     le = &free_list;
     while ((le = list_next(le)) != &free_list) {
-        struct Page* p = le2page(le, page_link);
-        count--, total -= p->property;
+        struct Page *p = le2page(le, page_link);
+        count --, total -= p->property;
     }
     assert(count == 0);
     assert(total == 0);
 }
 
 const struct pmm_manager default_pmm_manager = {
-    .name = "default_pmm_manager",           //¹ÜÀíÆ÷±êÊ¶
-    .init = default_init,                    //³õÊ¼»¯º¯Êı
-    .init_memmap = default_init_memmap,      //ÄÚ´æÓ³Éä³õÊ¼»¯
-    .alloc_pages = default_alloc_pages,      //Ò³Ãæ·ÖÅäº¯Êı
-    .free_pages = default_free_pages,        //Ò³ÃæÊÍ·Åº¯Êı
-    .nr_free_pages = default_nr_free_pages,  //¿ÕÏĞÒ³Ãæ²éÑ¯
-    .check = default_check,                  //×Ô¼ìº¯Êı
+    .name = "default_pmm_manager",           //ç®¡ç†å™¨æ ‡è¯†
+    .init = default_init,                    //åˆå§‹åŒ–å‡½æ•°
+    .init_memmap = default_init_memmap,      //å†…å­˜æ˜ å°„åˆå§‹åŒ–
+    .alloc_pages = default_alloc_pages,      //é¡µé¢åˆ†é…å‡½æ•°
+    .free_pages = default_free_pages,        //é¡µé¢é‡Šæ”¾å‡½æ•°
+    .nr_free_pages = default_nr_free_pages,  //ç©ºé—²é¡µé¢æŸ¥è¯¢
+    .check = default_check,                  //è‡ªæ£€å‡½æ•°
 };
 

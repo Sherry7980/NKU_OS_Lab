@@ -35,12 +35,12 @@ static void check_alloc_page(void);
 
 // init_pmm_manager - initialize a pmm_manager instance
 static void init_pmm_manager(void) {
-    pmm_manager = &buddy_system_pmm_manager; //默认是default，这里要改成相应的
+    pmm_manager = &best_fit_pmm_manager; //默认是default，这里要改成相应的
     cprintf("memory management: %s\n", pmm_manager->name);
     pmm_manager->init();
 }
 
-// init_memmap - call pmm->init_memmap to build Page struct for free memory
+// init_memmap - call pmm->init_memmap to build Page struct for free memorycd /mnt/c/Users/czy24/Desktop/OS/NKU_OS_Lab/lab2
 static void init_memmap(struct Page *base, size_t n) {
     pmm_manager->init_memmap(base, n);
 }
