@@ -8,7 +8,7 @@
 
 `First Fit` 算法的核心思想是，当需要分配一个资源请求时，它会从内存或存储空间的起始地址开始，顺序遍历空闲区域列表，并选择所遇到的**第一个**大小满足该请求的空闲块进行分配，而不会继续寻找后续可能存在的、大小更吻合的空闲块。
 
-`First Fit `算法以实现简单和分配速度快为主要优点，因为它通常无需遍历整个列表；但其代价是容易在内存的低地址部分留下大量难以利用的小碎片，从而可能降低内存的长期利用率。
+`First Fit`算法以实现简单和分配速度快为主要优点，因为它通常无需遍历整个列表；但其代价是容易在内存的低地址部分留下大量难以利用的小碎片，从而可能降低内存的长期利用率。
 
 ### 具体实现
 
@@ -18,37 +18,37 @@
 
 #### 数据结构
 
-<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+```C
 static free_area_t free_area;
 
 #define free_list (free_area.free_list) //内存空闲块链表
 #define nr_free (free_area.nr_free)     //空闲页面总数
-</pre>
+```
 
 `free_area_t` 是用于管理物理内存的空闲区域的数据结构，在`memlayout.h`中可以找到它的定义：
 
-<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+```C
 typedef struct {
     list_entry_t free_list;      //空闲内存块的链表头
     unsigned int nr_free;        //空闲页面的总数
 } free_area_t;
-</pre>
+```
 
 #### 初始化函数 default_init
 
-<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+```C
 static void
 default_init(void) {
     list_init(&free_list);
     nr_free = 0;
 }
-</pre>
+```
 
 该函数用于初始化双向链表的头节点和空闲页面计数器。函数调用`list_init`函数初始化了一个空的双向链表`free_list`，然后定义了`nr_free = 0`，也就是将空闲块的个数定义为`0`。
 
 #### 初始化函数 default_init_memmap
 
-<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+```C
 static void
 default_init_memmap(struct Page *base, size_t n) {
     assert(n > 0);                     //确保要初始化的页面数量大于0
@@ -76,7 +76,7 @@ default_init_memmap(struct Page *base, size_t n) {
         }
     }
 }
-</pre>
+```
 
 该函数的作用为：初始化一段连续的物理内存页面，将其标记为空闲状态，并加入到空闲内存管理链表中。
 
@@ -88,7 +88,7 @@ default_init_memmap(struct Page *base, size_t n) {
 
 #### 内存分配函数 default_alloc_pages
 
-<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+```C
 static struct Page *
 default_alloc_pages(size_t n) {           //参数为请求分配的连续页面数量
     assert(n > 0);                        //确保请求的页面数大于0
@@ -118,7 +118,7 @@ default_alloc_pages(size_t n) {           //参数为请求分配的连续页面
     }
     return page;                          //返回分配的内存块起始页面指针
 }
-</pre>
+```
 
 该函数的作用为：使用首次适应算法从空闲链表中分配指定数量的连续物理页面。
 
@@ -130,7 +130,7 @@ default_alloc_pages(size_t n) {           //参数为请求分配的连续页面
 
 #### 内存释放函数 default_free_pages
 
-<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+```C
 static void
 default_free_pages(struct Page *base, size_t n) {
     assert(n > 0);                        //确保释放的页面数大于0        
@@ -182,7 +182,7 @@ default_free_pages(struct Page *base, size_t n) {
         }
     }
 }
-</pre>
+```
 
 该函数的作用为：释放一段已分配的连续物理页面，将其重新加入空闲链表，并尝试与相邻的空闲块合并以减少碎片。
 
@@ -194,18 +194,18 @@ default_free_pages(struct Page *base, size_t n) {
 
 #### 辅助函数 default_nr_free_pages
 
-<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+```C
 static size_t
 default_nr_free_pages(void) {
     return nr_free;
 }
-</pre>
+```
 
 这是一个简单的获取器函数，用于获取当前系统中可用的空闲物理页面总数。它直接返回全局变量`nr_free`的值，该变量在内存分配时减少、在内存释放时增加，为其他系统组件提供了一种快速查询内存剩余情况的方法，无需遍历复杂的空闲链表结构，具有`O(1)`的时间复杂度。
 
 #### 测试函数 basic_check()
 
-<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+```C
 static void
 basic_check(void) {
     struct Page *p0, *p1, *p2;             //分配三个单独的页面，检查分配是否成功（返回值不为NULL即为成功）
@@ -258,7 +258,7 @@ basic_check(void) {
     free_page(p1);
     free_page(p2);
 }
-</pre>
+```
 
 该函数的作用为：对物理内存分配器和释放器进行一系列基本功能测试，验证分配、释放、页面属性等核心功能的正确性。
 
@@ -268,7 +268,7 @@ basic_check(void) {
 
 #### 测试函数 default_check()
 
-<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+```C
 static void
 default_check(void) {
     int count = 0, total = 0;                      //验证空闲链表的内部一致性
@@ -331,7 +331,7 @@ default_check(void) {
     assert(count == 0);
     assert(total == 0);
 }
-</pre>
+```
 
 该函数的作用为：对首次适应内存分配算法进行深入测试，验证内存分割、合并、分配顺序等复杂场景的正确性。
 
@@ -339,7 +339,7 @@ default_check(void) {
 
 #### 结构体 default_pmm_manager
 
-<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+```C
 const struct pmm_manager default_pmm_manager = {
     .name = "default_pmm_manager",           //管理器标识
     .init = default_init,                    //初始化函数
@@ -349,7 +349,7 @@ const struct pmm_manager default_pmm_manager = {
     .nr_free_pages = default_nr_free_pages,  //空闲页面查询
     .check = default_check,                  //自检函数
 };
-</pre>
+```
 
 `default_pmm_manager` 结构体是物理内存管理器的核心接口，它封装了完整的首次适应算法实现，提供了标准化的内存管理接口，支持系统启动自检和状态监控，为上层系统组件提供稳定的内存服务，具有良好的可扩展性和可维护性。
 
@@ -374,12 +374,116 @@ const struct pmm_manager default_pmm_manager = {
 
 
 ## 练习2：实现 Best-Fit 连续物理内存分配算法
+参考 `default_pmm.c` 中的框架，基于页链表`free_list`实现了 `Best-Fit`页面分配算法。物理内存以页为基本管理单位，每个空闲块（连续页）通过 `Page` 结构记录 `property` 字段指示块大小，并挂入空闲链表中。
+
+补充代码分析：
+### 1.best_fit_init_memmap
+```C
+//清空当前页框的标志和属性信息，并将页框的引用计数设置为0。
+p->flags=0;
+p->property=0;
+set_page_ref(p,0);
+```
+
+```C
+// 1、当base < page时，找到第一个大于base的页，将base插入到它前面，并退出循环
+if(base<page){
+    list_add_before(le, &(base->page_link));
+    break;
+}
+// 2、当list_next(le) == &free_list时，若已经到达链表结尾，将base插入到链表尾部
+if(list_next(le)==&free_list){
+    list_add(le,&(base->page_link));
+    break;
+}
+```
+
+### 2.best_fit_alloc_pages
+```C
+size_t min_size = nr_free + 1;
+//开始前把min_size最小可用块大小设置为一个足够大的上界
+
+// 遍历空闲链表，查找满足需求的空闲页框
+// 如果找到满足需求的页面，记录该页面以及当前找到的最小连续空闲页框数量
+
+while ((le = list_next(le)) != &free_list) {
+    struct Page *p = le2page(le, page_link);
+    if (p->property >= n && p->property < min_size) {
+        page = p;
+        min_size = p->property;
+        //不break，继续找更小的
+    }
+}
+```
+
+### 3.best_fit_free_pages
+```C
+// 具体来说就是设置当前页块的属性为释放的页块数、并将当前页块标记为已分配状态、最后增加nr_free的值
+//这里同first-fit，不再赘述
+    base->property=n;
+    SetPageProperty(base);
+    nr_free+=n;
+
+    if (list_empty(&free_list)) {
+        list_add(&free_list, &(base->page_link));
+    } else {
+        list_entry_t* le = &free_list;
+        while ((le = list_next(le)) != &free_list) {
+            struct Page* page = le2page(le, page_link);
+            if (base < page) {
+                list_add_before(le, &(base->page_link));
+                break;
+            } else if (list_next(le) == &free_list) {
+                list_add(le, &(base->page_link));
+                break;
+            }
+        }
+    }
+```
+
+```C
+    list_entry_t* le = list_prev(&(base->page_link));
+    if (le != &free_list) {
+        p = le2page(le, page_link);
+        /*LAB2 EXERCISE 2: YOUR CODE*/ 
+        // 编写代码
+        // 1、判断前面的空闲页块是否与当前页块是连续的，如果是连续的，则将当前页块合并到前面的空闲页块中
+        // 2、首先更新前一个空闲页块的大小，加上当前页块的大小
+        // 3、清除当前页块的属性标记，表示不再是空闲页块
+        // 4、从链表中删除当前页块
+        // 5、将指针指向前一个空闲页块，以便继续检查合并后的连续空闲页块
+        if (p + p->property == base) {
+            p->property += base->property;
+            ClearPageProperty(base);
+            list_del(&(base->page_link));
+            base = p; // 归并后用更大的前块继续尝试与后块合并
+        }
+    }
+
+    le = list_next(&(base->page_link));
+    if (le != &free_list) {
+        p = le2page(le, page_link);
+        if (base + base->property == p) {
+            base->property += p->property;
+            ClearPageProperty(p);
+            list_del(&(p->page_link));
+        }
+    }
+```
+
+总体来看，`best-fit`算法和`first-fit`算法除了`best_fit_free_pages`函数中有一些不同，其他都是相同的。
+
+我们使用`make qemu`编译文件，然后输入`make grade`进行测试，结果如下：
+
+![示例](pic/12.png)
+
+可以看到结果正确！
 
 ## 扩展练习Challenge：buddy system（伙伴系统）分配算法
 
 ### 主要思想
 
-`Buddy System `的核心目标是在内存分配和释放过程中减少外部碎片，同时保持较高的分配与合并效率。这是一种用于动态内存管理的高效算法，常用于操作系统内核中管理物理内存。
+`Buddy System`的核心目标是在内存分配和释放过程中减少外部碎片，同时保持较高的分配与合并效率。这是一种用于动态内存管理的高效算法，常用于操作系统内核中管理物理内存。
 
 #### 分配策略
 
@@ -403,13 +507,13 @@ const struct pmm_manager default_pmm_manager = {
 
 输入`make qemu`后，我们可以从启动信息中得到下面的信息：
 
-<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+```C
 DTB Address: 0x82200000
 Physical Memory from DTB:
   Base: 0x0000000080000000
   Size: 0x0000000008000000 (128 MB)
   End:  0x0000000087ffffff
-</pre>
+```
 
 总内存大小: `128 MB = 128 × 1024 × 1024 = 134,217,728` 字节
 
@@ -419,7 +523,7 @@ Physical Memory from DTB:
 
 又因为 `32,768页 = 2^15`页，所以定义最大阶数为`15`（实际上从结果来看，初始空闲页数为`16384`，正好是`32768`的一半，这表明并非所有物理内存都可用于分配，在`ucore`中，有大约一半的内存被系统保留使用），于是我们设计如下的数据结构：
 
-<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+```C
 // 根据128MB内存计算最大阶数：32,768页 = 2^15页
 #define MAX_ORDER 15
 #define BUDDY_ARRAY_SIZE (MAX_ORDER + 1)
@@ -429,7 +533,7 @@ typedef struct {
     list_entry_t free_array[MAX_ORDER + 1]; // 伙伴堆数组
     unsigned int nr_free;             // 伙伴系统中剩余的空闲块
 } buddy_system_t;
-</pre>
+```
 
 `free_array`的每个阶数都对应一个空闲链表，阶数`i`的链表包含大小为`2^i`页的空闲块。`nr_free`为总空闲页数，用于快速判断是否有足够内存。
 
@@ -437,7 +541,7 @@ typedef struct {
 
 在`buddy_system`的实现过程中，我们用到了以下的辅助函数：
 
-<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+```C
 // 基础函数实现
 static bool IS_POWER_OF_2(size_t n) {  //判断是不是2的次幂
     return (n != 0) && ((n & (n - 1)) == 0);
@@ -469,9 +573,9 @@ static size_t Find_The_Big_2(size_t n) {  //找到大于等于n的最小2的次�
     }
     return power;
 }
-</pre>
+```
 
-<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+```C
 // 获得伙伴块地址
 static struct Page* get_buddy(struct Page* page, unsigned int order) {
     if (order >= MAX_ORDER) return NULL;
@@ -505,13 +609,13 @@ static void show_buddy_array(unsigned int start_order, unsigned int end_order) {
         }
     }
 }
-</pre>
+```
 
 `get_buddy`函数通过巧妙的异或运算计算给定页面在指定阶数下的伙伴块地址，利用页面索引与`2`的`order`次方进行异或来翻转对应位以定位伙伴位置，并验证伙伴索引的有效性；而`show_buddy_array`函数则用于诊断显示伙伴系统的状态，它遍历指定范围内的各阶空闲链表，统计并输出每个阶数对应的空闲块数量，从而提供系统内存分布的可视化信息。
 
 #### 初始化函数
 
-<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+```C
 // 初始化Buddy System
 static void buddy_system_init(void) {
     buddy_sys.max_order = 0;  //设置当前最大阶数为0
@@ -558,13 +662,13 @@ static void buddy_system_init_memmap(struct Page* base, size_t n) {  //base是�
     cprintf("buddy_system: added memory block of order %u (%u pages), total free: %u\n",
         order, (unsigned int)block_size, buddy_sys.nr_free);
 }
-</pre>
+```
 
 这两个函数共同完成了伙伴系统的初始化工作：`buddy_system_init`负责初始化系统结构，设置最大阶数和空闲页数为零，并初始化所有阶数的空闲链表；而`buddy_system_init_memmap`则将一段连续的物理内存页面初始化为伙伴系统的可用内存，通过寻找不超过总页数的最大`2`的幂次方来确定初始内存块的阶数，将该大块加入到对应阶数的空闲链表中，并更新系统空闲页数计数，从而为后续的内存分配和释放操作建立完整的伙伴系统管理框架。
 
 #### 块分割算法
 
-<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+```C
 static void buddy_system_split(unsigned int order) {  //将一个大内存块分割成两个较小的伙伴块，order是要分割的内存块阶数
     assert(order > 0 && order <= MAX_ORDER);  //确保块阶数有效
 
@@ -603,13 +707,13 @@ static void buddy_system_split(unsigned int order) {  //将一个大内存块分
 
     cprintf("buddy_system: split order %u -> two order %u blocks\n", order, new_order);
 }
-</pre>
+```
 
 `buddy_system_split`函数实现了`buddy_system`的内存块分割机制，它首先从指定阶数的空闲链表中获取一个内存块并将其移除，然后将该大块对半分割成两个互为伙伴的小块，分别设置它们的阶数属性和页面标志，最后将这两个新块加入到低一阶的空闲链表中并更新系统空闲内存计数，从而完成从大块到两个小块的分解过程，为内存分配提供合适大小的块。
 
 #### 页面分配算法
 
-<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+```C
 static struct Page* buddy_system_alloc_pages(size_t n) {  //分配至少n个连续的物理页，n是请求的页面数量
     assert(n > 0);  //确保请求的页面数有效
 
@@ -668,13 +772,13 @@ static struct Page* buddy_system_alloc_pages(size_t n) {  //分配至少n个连�
 
     return page;
 }
-</pre>
+```
 
 `buddy_system_alloc_pages`函数是`buddy_system`内存分配的核心实现，它首先验证请求的页数有效性并检查系统是否有足够空闲内存，然后计算满足需求的最小`2`的幂次方对应的阶数。接着从所需阶数开始向上搜索空闲链表，找到第一个可用的内存块，如果该块大于需求则通过递归分割操作将其不断对半划分直至得到精确大小的块。最后从空闲链表中移除目标块，更新系统空闲页面计数，并设置页面的分配状态标志，完成整个内存分配流程，确保既满足请求需求又维护伙伴系统的结构完整性。
 
 #### 释放与合并算法
 
-<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+```C
 static void
 buddy_system_free_pages(struct Page* base, size_t n) {  //释放之前分配的内存块，并尝试与伙伴块合并形成更大的连续块，base是要释放的内存块起始页面指针，n是要释放的页面数量
     assert(n > 0);  //保证有效性
@@ -755,7 +859,7 @@ buddy_system_free_pages(struct Page* base, size_t n) {  //释放之前分配的�
 
     cprintf("buddy_system: freed successfully, total free: %u pages\n", buddy_sys.nr_free);
 }
-</pre>
+```
 
 `buddy_system_free_pages`函数首先根据请求释放的页面数量计算对应的内存块阶数并初始化块属性，然后进入核心的合并循环：通过安全计数器防止无限循环，在循环中严格检查伙伴块的存在性、属性匹配、地址有效性和链表成员资格等多重条件，确保只有真正空闲且匹配的伙伴块才能参与合并；在确认可合并后，从链表中移除伙伴块，将两个小块合并为一个大块并提升阶数，重复此过程直至无法继续合并；最后将最终的内存块添加到对应阶数的空闲链表并更新系统空闲页面计数，完成内存的释放和碎片整理过程。
 
@@ -838,6 +942,393 @@ buddy_system_free_pages(struct Page* base, size_t n) {  //释放之前分配的�
 
 ## 扩展练习Challenge：任意大小的内存单元slub分配算法
 
+### slub算法整体思想
+实现要求的两层架构高效内存分配
+
+- **页层（第一层）**：按页分配、释放，面向大于`1`页的内存请求。
+- **对象层（第二层，SLUB 思路）**：为小于`1`页大小的任意大小内存提供按固定尺寸分配和释放。
+
+### 模块组成与关键数据结构
+- **`slab_page_t`**：单个 `slab` 页头，记录所属缓存、对象大小、对象数、空闲计数、位图与对象区起址，以及该 `slab` 占用的页数（为简化实现使用单页 `slab`）。
+```C
+typedef struct slab_page {
+    list_entry_t link;            // 在所属缓存池中的链表节点（full/partial/empty）
+    struct kmem_cache *cache;     // 指向该 slab 所属的 kmem_cache（对象缓存池）
+    uint16_t obj_size;            // 每个对象的大小（字节数）
+    uint16_t objs_per_slab;       // 这个slab 可容纳的对象总数量
+    uint16_t free_cnt;            // 当前尚未分配的对象数量
+    uint16_t bitmap_words;        // 位图所占用的 uint32_t 数量（位图长度）
+    uint32_t *bitmap;             // 对象分配位图（1 表示已分配，0 表示空闲）
+    void *data;                   // 对象区起始地址
+    size_t npages;                // 这个slab 占用的物理页数量（本实现为单页）
+} slab_page_t;
+```
+
+- **`kmem_cache_t`**：固定对象尺寸的缓存，维护三条链表：`full`（无空位）、`partial`（尚有空位）、`empty`（全空）。同时记录对象对齐、对象大小与每个 `slab` 的页数（本实现为 `1`）。
+```C
+typedef struct kmem_cache {
+    list_entry_t full;            // 已满 slab 链表
+    list_entry_t partial;         // 部分占用 slab 链表
+    list_entry_t empty;           // 空闲 slab 链表
+    size_t size;                  // 对齐后的对象大小（每个对象占用字节数）
+    size_t align;                 // 对象对齐要求（例如 8B、16B）
+    size_t slab_npages;           // 每个 slab 占用的物理页数量（本实现为 1）
+    const char *name;             // 缓存名称
+} kmem_cache_t;
+```
+
+- **全局桶（bucket）表**
+`KMALLOC_MIN/MAX/BUCKETS` 控制桶粒度与上限
+`size_caches[ ]`：指向对应的 `kmem_cache_t`
+`bucket_sizes[ ]`：第 `i` 桶的对象字节数
+
+```C
+#define KMALLOC_MIN 8  //最小 1字节
+#define KMALLOC_MAX (PAGE_SIZE * 4)  //理论最大支持对象 16KB
+#define KMALLOC_BUCKETS 32 
+
+static kmem_cache_t *size_caches[KMALLOC_BUCKETS]; //按bucket编号保存每个尺寸的 kmem_cache 指针
+static size_t bucket_sizes[KMALLOC_BUCKETS]; //按bucket编号保存每个桶的字节大小
+```
+
+### 内存布局与页内结构
+```C
+| slab_page_t 头 | 对齐补白 | 位图 (u32对齐，16B对齐) | 对齐补白至对象对齐 | 对象区 (等长对象 × N) |
+```
+
+### 算法实现关键函数
+#### 初始化
+`slub_init()`：生成桶尺寸表、清空各桶 `cache` 指针、置 `slub_ready=1` 并打印最大桶支持范围。
+```C
+//slub分配器初始化，建立不同尺寸的桶
+static void init_size_buckets(void){
+    for(int i=0;i<KMALLOC_BUCKETS;i++){
+        size_t s = ((size_t)1 << i) * KMALLOC_MIN;
+        bucket_sizes[i] = s;
+        if(s > KMALLOC_MAX) { 
+            size_caches[i] = NULL; 
+            continue; 
+        }
+    }
+}
+
+//初始化slub体系
+void slub_init(void){
+    init_size_buckets();
+    slub_ready = 1;
+    cprintf("[slub] init ok: buckets up to %d bytes\n", KMALLOC_MAX);
+}
+```
+
+#### 任意大小内存到桶的映射
+`bucket_index(size)`：将任意 `size` 向上收敛到 `8,16,32,...` 中的最小可容纳桶；`get_cache_for(size)` 过滤`≥PAGE_SIZE`的请求（或映射后桶尺寸`≥PAGE_SIZE`）直接返回 `NULL`，表示走页层。
+
+```C
+//根据用户请求的 size，找到对应的桶号
+static int bucket_index(size_t size){
+    size = MAX(size, (size_t)KMALLOC_MIN); //保证最小也是8B
+    size_t s = KMALLOC_MIN; //从第0号桶开始检查
+    int i=0;
+    while(s < size && i<'KMALLOC_BUCKETS-1){ 
+        s<<=1; 
+        i++; 
+    }
+    return i;
+}
+```
+
+#### 位图分配策略
+- `bitmap_find_zero_and_set(bm, words, limit)`：按 `32` 位字扫描，最后一字用 `mask` 剪裁仅在有效位内找第一个 `0`，置 `1` 并返回全局位索引，找不到返回 `-1`。
+- `bitmap_test` 和 `bitmap_clear`：测试或清零指定槽位。
+```C
+//用来在slab的位图中找一个空对象槽位并占用，找到“第一个为 0 的位”，把它置为 1，并返回它的全局索引；若找不到，返回 -1
+static int bitmap_find_zero_and_set(uint32_t *bm, int words, int limit) {
+    for (int w = 0; w < words; w++) {
+        int base = w * 32;
+        if (base >= limit) break; //如果这个字的起点已经不小于 limit，说明从这字开始已经没有有效位，提前退出
+
+        //最后一个 32 位字不能全部使用，只能使用有效的前几位
+        int valid_bits = limit - base;
+        if (valid_bits > 32) valid_bits = 32;
+
+        // 只在有效位范围内查找 0 位：把无效位强制视为 1（占用）
+        uint32_t mask;
+        if (valid_bits == 32) {
+            mask = 0xFFFFFFFFu;        // 全 1
+        } else if (valid_bits == 0) {
+            mask = 0u;                 // 没有有效位（通常不会走到这里）
+        } else {
+            mask = 0xFFFFFFFFu >> (32 - valid_bits);
+        }
+
+        // 只看有效位
+        uint32_t word = bm[w] & mask;
+
+        // 有效位全部为 1 → 这个 32 位块已满，继续下一个
+        if (word == mask) {
+            continue;
+        }
+
+
+        // 在有效范围内找第一个 0 位：等价于寻找 (~word & mask) 的第一个 1 位
+        uint32_t freebits = (~word) & mask;
+        int bit = 0;
+        while ((freebits & 1u) == 0u) {
+            freebits >>= 1;
+            bit++; //记录右移了几次
+        }
+
+        int pos = base + bit;                     // 全局位索引
+        bm[w] = word | (1u << bit);               // 置 1（占用）
+        return pos;
+    }
+    return -1;
+}
+
+//用于清零位图里指定对象槽
+static inline void bitmap_clear(uint32_t *bm, int idx){
+    //idx是要清零的第几个对象槽
+    //idx>>5：等价于 idx / 32，找到“第几个 32 位整数”
+    bm[idx>>5] &= ~(1u<<(idx&31));
+}
+
+//用于检查位图中指定对象槽位是占用状态还是空闲状态
+static inline bool bitmap_test(uint32_t *bm, int idx){
+    return (bm[idx>>5] >> (idx&31)) & 1u;
+}
+```
+
+#### slab创建与销毁
+- `slab_new(c)`：向页层申请 `1` 页，页首布置 `slab_page_t`，两轮估算与对齐后确定位图与对象区，初始化位图与 `free_cnt`，返回 `slab`。
+- `slab_delete(sp)`：释放该页。
+```C
+//向页分配器要一页，在页里布置好slab的元数据、位图、对象区，然后把它挂回给上层使用。这个函数把页层内存，变成对象层可用的slab
+static slab_page_t *slab_new(kmem_cache_t *c){
+    size_t npages = c->slab_npages; 
+    struct Page *pg = alloc_pages(npages); //从第一层页分配器申请npages页
+    if(pg == NULL) return NULL; 
+    void *slab_mem = page2kva(pg); //把页描述符转成内核虚拟地址，后续在这片内存上布局
+    size_t slab_bytes = npages * PAGE_SIZE; //slab的总字节数
+
+    // 元数据在页头
+    slab_page_t *sp = (slab_page_t*)slab_mem;
+    memset(sp, 0, sizeof(*sp));
+    sp->cache   = c; //把这个slab归属到哪一个哪种对象尺寸的缓存池kmem_cache
+    sp->obj_size= (uint16_t)c->size; //记录单个对象的步长（已经在 kmem_cache_create 中按对齐向上取整过）
+    sp->npages  = npages;  //这个slab占用了多少页
+
+    // 先按 8B 对齐元数据
+    size_t meta = ALIGN_UP(sizeof(*sp), 8);
+
+    // --- 第一轮：用“最大可能对象数”粗略估算 bitmap 大小 ---
+    size_t objs_guess = (slab_bytes - meta) / c->size; //假装除了元数据外，剩下全给对象区，能放下多少个对象。得到最大可能对象数”objs_guess
+    if (objs_guess == 0) {
+        // 无法容纳任何对象，直接回收并返回 NULL
+        free_pages(pg, npages);
+        return NULL;
+    }
+    size_t bits_guess = objs_guess; //位图需要的bit数 = 对象数
+    size_t bm_bytes_guess = ALIGN_UP(((bits_guess + 31) / 32) * 4, 16);
+
+    /*内存布局目前设想为：
+      slab头(meta) → 位图(bm_bytes_guess) → 对象区(data_start)
+      但对象区起点必须按对象对齐 c->align，所以对 (meta + 位图) 之后再做一次上取整对齐，得到对象区真实起点 data_start*/
+    uintptr_t data_start = ALIGN_UP((uintptr_t)slab_mem + meta + bm_bytes_guess, c->align);
+
+    // 根据真正可用空间重新计算“最终对象数”
+    size_t used_hdr = (size_t)(data_start - (uintptr_t)slab_mem);   // meta + bitmap(+pad)
+    if (used_hdr >= slab_bytes) { //如果头部就占用了整页，这一页无法再存放对象，回收返回
+        free_pages(pg, npages);
+        return NULL;
+    }
+    size_t objs_final = (slab_bytes - used_hdr) / c->size; //最终可容纳对象数
+    if (objs_final == 0) {
+        free_pages(pg, npages);
+        return NULL;
+    }
+
+    // --- 第二轮：用最终对象数回写 bitmap 大小（只会更小，不会更大）---
+    size_t bits = objs_final; //位图需要的位数 = 对象个数（每对象1bit）
+    size_t bitmap_bytes = ALIGN_UP(((bits + 31) / 32) * 4, 16);
+
+    // 写入 slab 结构
+    sp->objs_per_slab = (uint16_t)objs_final; 
+    sp->bitmap_words  = (uint16_t)(bitmap_bytes / 4);
+
+    sp->bitmap = (uint32_t*)((uint8_t*)slab_mem + meta); //位图的实际地址 = 页首 + meta
+    memset(sp->bitmap, 0, bitmap_bytes); //把位图清零，表示所有对象槽位都是空闲0
+
+    sp->data = (void*)ALIGN_UP((uintptr_t)sp->bitmap + bitmap_bytes, c->align); ////data用最终bitmap大小再对齐一次
+    sp->free_cnt = (uint16_t)objs_final; //初始化空闲计数 一开始所有对象槽都空闲，所以空闲数 = 槽位总数
+
+    list_init(&sp->link);
+    return sp;
+}
+
+
+static void slab_delete(slab_page_t *sp){
+    struct Page *pg = kva2page((void*)sp);
+    free_pages(pg, sp->npages);
+}
+```
+
+#### 小块分配与释放
+- `kmem_cache_alloc(c)`：
+1. 选 `slab`：优先 `partial`，其次 `empty`
+2. `slab_alloc_obj(sp)` 用位图找第一个 `0` 位并置 `1`，`free_cnt--`
+3. 按 `free_cnt` 将 `slab` 迁移到 `full` 或 `partial`
+
+- `kmem_cache_free(c,obj)`：
+1. `ptr_to_slab(obj)` 回溯校验（页对齐、对象区边界与步长对齐、元信息合理）
+2. `slab_free_obj(sp,obj) `位图清零、`free_cnt++`
+3. `slab` 归位到 `empty` 或 `partial`
+```C
+//从某个尺寸的缓存池 kmem_cache_t *c 里挑一块合适的 slab，向其中分配一个对象，并按结果把该 slab 移到正确的链表
+void *kmem_cache_alloc(kmem_cache_t *c){
+    slab_page_t *sp = NULL;
+    //选择一个还有空位的slab
+    if(!list_empty(&c->partial)){ //优先从partial中拿
+        sp = LIST2STRUCT(list_next(&c->partial), slab_page_t, link);
+    } else if(!list_empty(&c->empty)){  //其次从empty中拿
+        sp = LIST2STRUCT(list_next(&c->empty), slab_page_t, link);
+    } else {  //两者都没有，新建一个 slab（向页分配器要页、在页上布置元数据/位图/对象区），建好后先挂到 empty
+        sp = slab_new(c);
+        if(sp == NULL) return NULL;
+        list_add(&c->empty, &sp->link);
+    }
+
+    void *obj = slab_alloc_obj(sp); //在选中的 slab 里分配一个对象
+    assert(obj != NULL);
+
+    //根据分配后的空闲数，把 slab 移到正确的链
+    list_del(&sp->link);
+    if(sp->free_cnt == 0){
+        list_add(&c->full, &sp->link);
+    } else {
+        list_add(&c->partial, &sp->link);
+    }
+    return obj;
+}
+
+//把 obj 还回它所属的缓存池 c，并按释放后的空闲数把所在 slab 归位到正确链表
+void kmem_cache_free(kmem_cache_t *c, void *obj){
+    /*通过对象指针反查它所在的 slab 页头
+    如果 obj 不是 SLUB 的小对象，ptr_to_slab 会返回 NULL，
+    上层的通用 kfree 会走“整页释放”路径*/
+    slab_page_t *sp = ptr_to_slab(obj);
+    assert(sp->cache == c);
+    slab_free_obj(sp, obj);
+    list_del(&sp->link);
+    if(sp->free_cnt == sp->objs_per_slab){
+        list_add(&c->empty, &sp->link);
+    } else {
+        list_add(&c->partial, &sp->link);
+    }
+  
+}
+```
+
+#### 大块分配与释放
+- `kmalloc(size)`：若 `get_cache_for` 返回 `NULL`，则页上取整得到 `npages`，`alloc_pages(npages)` 后在页首写入 `npages` 作为头部，返回头部之后的指针。
+- `kfree(ptr)`：若 `ptr_to_slab` 失败，退回一个 `sizeof(size_t)` 读出 `npages`，`free_pages` 成批归还。
+
+```C
+//小于一页的交给 SLUB（第二层）按桶分配；大于等于一页的直接按页分配
+void *kmalloc(size_t size){
+    assert(slub_ready);
+    if(size == 0) return NULL;
+    kmem_cache_t *c = get_cache_for(size); //如果 size < PAGE_SIZE 且对应的桶尺寸也 < 一页，就返回该桶的 kmem_cache
+    if(c){ //若拿到 c，走 SLUB 路径：在该缓存池的 slab 里分一个对象
+        return kmem_cache_alloc(c);
+    }
+    //不适合SLUB分配，整页分配
+    size_t npages = (size + PAGE_SIZE - 1) / PAGE_SIZE;
+    struct Page *p = alloc_pages(npages);
+    if(!p) return NULL;
+    void *kva = page2kva(p);
+    
+    ((size_t*)kva)[0] = npages; //在页首kva处写入npages
+    return (void*)((uint8_t*)kva + sizeof(size_t));
+}
+
+//统一释放
+//判定是来自slab的对象，走SLUB释放
+//整页分配的按页释放
+void kfree(void *ptr){
+    if(ptr == NULL) return;
+    //检查是否来自slab
+    slab_page_t *sp = ptr_to_slab(ptr);
+    //安全性检查，对象必须落在对象区
+    if(sp!=NULL){
+        kmem_cache_free(sp->cache, ptr);
+        return;
+    }
+    //整页释放
+    void *kva = (uint8_t*)ptr - sizeof(size_t); //减去在页首存的页数信息
+    size_t npages = ((size_t*)kva)[0];
+    struct Page *p = kva2page(kva);
+    free_pages(p, npages);
+}
+```
+
+### 测试用例
+- 自测入口：`slub_run_tests()` 先 `slub_init()`，再 `slub_selftest()`，并做任意尺寸演示分配/释放。
+- 自测三部分：
+1. 幂次尺寸`（8B→2048B）`：成批分配，然后交错释放，测试 `full/partial/empty` 的迁移
+2. 小块随机混合：`1..3000B` 的随机分配和释放 `5000` 次，测试不同桶与位图一致性
+3. 大块分配/释放：`5000/12000B` 触发页层路径，测试第一层页层分配
+
+```c
+static uint32_t prng_state = 1;
+static uint32_t prng(void){ prng_state = prng_state*1103515245 + 12345; return prng_state; }
+
+int slub_selftest(void){
+    cprintf("[slub] selftest start\n");
+    prng_state = 1;
+
+    // 1) 幂次尺寸 按规则分配和释放
+    for(size_t s=8; s<=2048; s<<=1){
+        void *p[32];
+        int n=32;
+        for(int i=0;i<n;i++){ p[i]=kmalloc(s); assert(p[i]!=NULL); memset(p[i], 0xA5, s<16? s:16); }
+        for(int i=0;i<n;i+=2){ kfree(p[i]); }
+        for(int i=1;i<n;i+=2){ kfree(p[i]); }
+    }
+
+    // 2) 小块随机分配和释放
+    enum {N=256};
+    void *arr[N]={0};
+    for(int it=0; it<5000; it++){
+        int i = prng() % N;
+        if(arr[i]==NULL){
+            size_t s = (prng()%3000)+1;
+            arr[i] = kmalloc(s);
+            assert(arr[i]!=NULL);
+            ((uint8_t*)arr[i])[0] = 0x5A;
+        }else{
+            kfree(arr[i]);
+            arr[i]=NULL;
+        }
+    }
+    for(int i=0;i<N;i++) if(arr[i]) kfree(arr[i]);
+
+    // 3) 整页分配和释放
+    void *b1 = kmalloc(5000);
+    void *b2 = kmalloc(12000);
+    assert(b1 && b2);
+    kfree(b1); 
+    kfree(b2);
+
+    cprintf("[slub] selftest passed\n");
+    return 0;
+}
+```
+测试结果：
+
+![示例](pic/10.jpg)
+
+![示例](pic/11.png)
+
 ## 扩展练习Challenge：硬件的可用物理内存范围的获取方法
 
 ### 如何让 OS 获取可用物理内存范围
@@ -856,7 +1347,7 @@ buddy_system_free_pages(struct Page* base, size_t n) {  //释放之前分配的�
 
 获取物理内存容量可以通过`BIOS`中断`（INT 15h, E820）`实现，`BIOS` 会返回一张包括起始位置、长度、类型在内的内存映射表，结构如下：
 
-<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+```C
 C++
 struct e820map {
     int nr_map;
@@ -866,7 +1357,7 @@ struct e820map {
         long type;
     } map[E820MAX];
 };
-</pre>
+```
 
 在这个中断执行后，会被存入内存，再由内核读取。
 
@@ -882,7 +1373,7 @@ struct e820map {
 
 结构体大致如下：
 
-<pre style="background: #f8f8f8; padding: 10px; border-radius: 5px; font-family: 'Monaco', 'Consolas', monospace;">
+```C
 C++
 typedef struct multiboot_info {
     uint32_t flags;                      //标志位，表明字段是否有效
@@ -891,7 +1382,7 @@ typedef struct multiboot_info {
     uint32_t mmap_addr;                  //内存映射表地址
     ...
 } multiboot_info_t;
-</pre>
+```
 
 其中`mmap_addr`和`mmap_length`字段指向的内存映射表为`BIOS`中断使用的结构体（`E820`函数）
 
