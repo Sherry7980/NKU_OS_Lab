@@ -170,6 +170,14 @@ __alltraps:
 在`kern/trap/trap.c`中编写代码如下：
 
 ```C
+/*RISC-V规范规定：看指令最低两位（bits[1:0]）
+bits[1:0] != 0b11，压缩指令（16 位，2 字节）
+bits[1:0] == 0b11，非压缩指令（32 位，4 字节）*/
+static inline uintptr_t advance_epc(uintptr_t epc) {
+    uint16_t half = *(uint16_t *)epc;          // 取低16位(2字节)即可判断长短
+    return epc + ((half & 0x3) == 0x3 ? 4 : 2);
+}
+
 case CAUSE_ILLEGAL_INSTRUCTION:
     // 非法指令异常处理
     /* LAB3 CHALLENGE3   2311205  */
@@ -179,7 +187,7 @@ case CAUSE_ILLEGAL_INSTRUCTION:
     */
     cprintf("Exception type: Illegal instruction\n");
     cprintf("Illegal instruction caught at 0x%08x\n", tf->epc);
-    tf->epc += 4;
+    tf->epc =  advance_epc(tf->epc);
     break;
 case CAUSE_BREAKPOINT:
     //断点异常处理
@@ -190,9 +198,11 @@ case CAUSE_BREAKPOINT:
     */
     cprintf("Exception type: breakpoint\n");
     cprintf("ebreak caught at 0x%08x\n", tf->epc);
-    tf->epc += 2; //这里由于ebreak占2个字节，所以下一条指令偏移为2
+    tf->epc =  advance_epc(tf->epc);
     break;
 ```
+**判断指令长短**：RISC-V 指令不一定都是 4 字节。启用压缩扩展（RVC）后，可能是 2 字节（16 位）。因此，前移多少（+2 还是 +4）必须先判断。
+
 **非法指令异常处理**：当`CPU`遇到无法识别的指令时，系统会输出异常类型和触发地址，然后将程序计数器`tf->epc`增加`4`字节跳过这条非法指令，确保程序能够继续执行后续代码。
 
 **断点异常处理**：当程序执行`ebreak`指令时，系统会输出断点类型和指令地址，然后将程序计数器`tf->epc`增加`2`字节跳过这个断点指令，这通常用于调试器设置断点或程序调试目的。

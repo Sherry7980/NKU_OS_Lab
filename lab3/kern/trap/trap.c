@@ -22,6 +22,13 @@ static void print_ticks() {
 #endif
 }
 
+// 根据 epc 处指令的低两位判断指令长度：
+// 低两位!=3 => 压缩指令(16bit, 2字节)；==3 => 非压缩(32bit, 4字节)
+static inline uintptr_t advance_epc(uintptr_t epc) {
+    uint16_t half = *(uint16_t *)epc;          // 取低16位即可判断长短
+    return epc + ((half & 0x3) == 0x3 ? 4 : 2);
+}
+
 /* idt_init - initialize IDT to each of the entry points in kern/trap/vectors.S
  */
 void idt_init(void) {
@@ -185,7 +192,7 @@ void exception_handler(struct trapframe *tf) {
             */
             cprintf("Exception type: Illegal instruction\n");
             cprintf("Illegal instruction caught at 0x%08x\n", tf->epc);
-            tf->epc += 4;
+            tf->epc =  advance_epc(tf->epc);
             break;
         case CAUSE_BREAKPOINT:
             //断点异常处理
@@ -196,7 +203,7 @@ void exception_handler(struct trapframe *tf) {
             */
             cprintf("Exception type: breakpoint\n");
             cprintf("ebreak caught at 0x%08x\n", tf->epc);
-            tf->epc += 2; //这里由于ebreak占2个字节，所以下一条指令偏移为2
+            tf->epc = advance_epc(tf->epc); 
             break;
         case CAUSE_MISALIGNED_LOAD:
             break;
