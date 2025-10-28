@@ -2980,14 +2980,14 @@ ffffffffc0201984:	83ffe0ef          	jal	ra,ffffffffc02001c2 <__panic>
     uintptr_t freemem = PADDR((uintptr_t)pages + sizeof(struct Page) * (npage - nbase));
 ffffffffc0201988:	00001617          	auipc	a2,0x1
 ffffffffc020198c:	78060613          	addi	a2,a2,1920 # ffffffffc0203108 <buddy_system_pmm_manager+0xc8>
-ffffffffc0201990:	05f00593          	li	a1,95
+ffffffffc0201990:	06600593          	li	a1,102
 ffffffffc0201994:	00001517          	auipc	a0,0x1
 ffffffffc0201998:	71c50513          	addi	a0,a0,1820 # ffffffffc02030b0 <buddy_system_pmm_manager+0x70>
 ffffffffc020199c:	827fe0ef          	jal	ra,ffffffffc02001c2 <__panic>
         panic("DTB memory info not available");
 ffffffffc02019a0:	00001617          	auipc	a2,0x1
 ffffffffc02019a4:	6f060613          	addi	a2,a2,1776 # ffffffffc0203090 <buddy_system_pmm_manager+0x50>
-ffffffffc02019a8:	04700593          	li	a1,71
+ffffffffc02019a8:	04e00593          	li	a1,78
 ffffffffc02019ac:	00001517          	auipc	a0,0x1
 ffffffffc02019b0:	70450513          	addi	a0,a0,1796 # ffffffffc02030b0 <buddy_system_pmm_manager+0x70>
 ffffffffc02019b4:	80ffe0ef          	jal	ra,ffffffffc02001c2 <__panic>
@@ -2995,7 +2995,7 @@ ffffffffc02019b4:	80ffe0ef          	jal	ra,ffffffffc02001c2 <__panic>
 ffffffffc02019b8:	86ae                	mv	a3,a1
 ffffffffc02019ba:	00001617          	auipc	a2,0x1
 ffffffffc02019be:	74e60613          	addi	a2,a2,1870 # ffffffffc0203108 <buddy_system_pmm_manager+0xc8>
-ffffffffc02019c2:	07a00593          	li	a1,122
+ffffffffc02019c2:	08100593          	li	a1,129
 ffffffffc02019c6:	00001517          	auipc	a0,0x1
 ffffffffc02019ca:	6ea50513          	addi	a0,a0,1770 # ffffffffc02030b0 <buddy_system_pmm_manager+0x70>
 ffffffffc02019ce:	ff4fe0ef          	jal	ra,ffffffffc02001c2 <__panic>
