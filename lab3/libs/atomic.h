@@ -1,3 +1,5 @@
+// 定义了对一个二进制位进行读写的原子操作，确保相关操作不被中断打断
+// 包括set_bit()设置某个二进制位的值为1, change_bit()给某个二进制位取反，test_bit()返回某个二进制位的值。
 #ifndef __LIBS_ATOMIC_H__
 #define __LIBS_ATOMIC_H__
 

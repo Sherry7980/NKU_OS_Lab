@@ -6,7 +6,7 @@
 
 volatile size_t ticks;
 
-static inline uint64_t get_cycles(void) {
+static inline uint64_t get_cycles(void) {  //读取当前时间 rdtime
 #if __riscv_xlen == 64
     uint64_t n;
     __asm__ __volatile__("rdtime %0" : "=r"(n));
@@ -45,4 +45,4 @@ void clock_init(void) {
     cprintf("++ setup timer interrupts\n");
 }
 
-void clock_set_next_event(void) { sbi_set_timer(get_cycles() + timebase); }
+void clock_set_next_event(void) { sbi_set_timer(get_cycles() + timebase); }  //设置时钟事件 sbi_set_timer

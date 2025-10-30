@@ -40,10 +40,11 @@ struct pushregs {
 
 struct trapframe {
     struct pushregs gpr;
-    uintptr_t status;
-    uintptr_t epc;
-    uintptr_t badvaddr;
-    uintptr_t cause;
+    uintptr_t status;  //sstatus寄存器定义了当前的处理器状态和控制位
+    uintptr_t epc; //sepc寄存器在异常发生时保存了异常发生的位置，即当前指令的地址（PC）
+    uintptr_t badvaddr; //sbadaddr寄存器用于存储导致访问故障的虚拟地址。
+    // 如果异常是由于加载、存储或其他内存访问指令试图访问非法地址引起的，这个寄存器将包含尝试访问的地址
+    uintptr_t cause; // scause寄存器指示了导致异常的具体原因。这个值是一个编码后的数字，表示不同类型的异常或中断
 };
 
 void trap(struct trapframe *tf);

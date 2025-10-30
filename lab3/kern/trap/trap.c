@@ -1,3 +1,8 @@
+/*
+分发不同类型的中断给不同的handler, 完成上下文切换之后对中断的具体处理
+例如外设中断要处理外设发来的信息，时钟中断要触发特定的事件
+中断处理初始化的函数也在这里，主要是把中断向量表(stvec)设置成所有中断都要跳到trapentry.S进行处理
+*/
 #include <assert.h>
 #include <clock.h>
 #include <console.h>
@@ -53,10 +58,15 @@ void idt_init(void) {
      *     Notice: the argument of lidt is idt_pd. try to find it!
      */
 
+    //约定：若中断前处于S态，sscratch为0
+    //若中断前处于U态，sscratch存储内核栈地址
+    //那么之后就可以通过sscratch的数值判断是内核态产生的中断还是用户态产生的中断
+    //我们现在是内核态所以给sscratch置零
     extern void __alltraps(void);
     /* Set sup0 scratch register to 0, indicating to exception vector
        that we are presently executing in the kernel */
     write_csr(sscratch, 0);
+    //我们保证__alltraps的地址是四字节对齐的，将__alltraps这个符号的地址直接写到stvec寄存器
     /* Set the exception vector address */
     write_csr(stvec, &__alltraps);
 }
@@ -110,7 +120,7 @@ void print_regs(struct pushregs *gpr) {
     cprintf("  t6       0x%08x\n", gpr->t6);
 }
 
-void interrupt_handler(struct trapframe *tf) {
+void interrupt_handler(struct trapframe *tf) { //中断处理（100次时钟中断）
     intptr_t cause = (tf->cause << 1) >> 1;
     switch (cause) {
         case IRQ_U_SOFT:
@@ -177,7 +187,7 @@ void interrupt_handler(struct trapframe *tf) {
     }
 }
 
-void exception_handler(struct trapframe *tf) {
+void exception_handler(struct trapframe *tf) { //异常处理
     switch (tf->cause) {
         case CAUSE_MISALIGNED_FETCH:
             break;
@@ -228,12 +238,13 @@ void exception_handler(struct trapframe *tf) {
 }
 
 static inline void trap_dispatch(struct trapframe *tf) {
+    //scause的最高位是1（即表示一个负数），说明trap是由中断引起的
     if ((intptr_t)tf->cause < 0) {
         // interrupts
-        interrupt_handler(tf);
+        interrupt_handler(tf); //中断处理
     } else {
         // exceptions
-        exception_handler(tf);
+        exception_handler(tf); //异常处理
     }
 }
 
