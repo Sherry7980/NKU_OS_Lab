@@ -74,11 +74,11 @@ ffffffffc020004e:	05428293          	addi	t0,t0,84 # ffffffffc0200054 <kern_init
 ffffffffc0200052:	8282                	jr	t0
 
 ffffffffc0200054 <kern_init>:
-void grade_backtrace(void);
-
 int kern_init(void) {
+    // 声明外部变量，edata指向BSS段开始，end指向内核结束地址
     extern char edata[], end[];
-    // 先清零 BSS，再读取并保存 DTB 的内存信息，避免被清零覆盖（为了解释变化 正式上传时我觉得应该删去这句话）
+    
+    // 清零BSS段（未初始化的全局变量区域）
     memset(edata, 0, end - edata);
 ffffffffc0200054:	00007517          	auipc	a0,0x7
 ffffffffc0200058:	fd450513          	addi	a0,a0,-44 # ffffffffc0207028 <free_area>
@@ -93,41 +93,57 @@ int kern_init(void) {
 ffffffffc020006a:	e406                	sd	ra,8(sp)
     memset(edata, 0, end - edata);
 ffffffffc020006c:	757010ef          	jal	ra,ffffffffc0201fc2 <memset>
+    
+    // 初始化设备树（Device Tree Blob），获取硬件信息
     dtb_init();
 ffffffffc0200070:	414000ef          	jal	ra,ffffffffc0200484 <dtb_init>
-    cons_init();  // init the console
+    
+    // 初始化控制台，设置输入输出
+    cons_init();
 ffffffffc0200074:	402000ef          	jal	ra,ffffffffc0200476 <cons_init>
+    
+    // 初始化消息字符串
     const char *message = "(THU.CST) os is loading ...\0";
-    //cprintf("%s\n\n", message);
+    // 输出启动消息到控制台
     cputs(message);
 ffffffffc0200078:	00002517          	auipc	a0,0x2
 ffffffffc020007c:	f6050513          	addi	a0,a0,-160 # ffffffffc0201fd8 <etext+0x4>
 ffffffffc0200080:	096000ef          	jal	ra,ffffffffc0200116 <cputs>
 
+    // 打印内核信息（如符号表等）
     print_kerninfo();
 ffffffffc0200084:	0e2000ef          	jal	ra,ffffffffc0200166 <print_kerninfo>
 
+    // 调试用的回溯函数（当前被注释）
     // grade_backtrace();
-    idt_init();  // init interrupt descriptor table
+    
+    // 初始化中断描述符表
+    idt_init();
 ffffffffc0200088:	7b8000ef          	jal	ra,ffffffffc0200840 <idt_init>
 
-    pmm_init();  // init physical memory management
+    // 初始化物理内存管理
+    pmm_init();
 ffffffffc020008c:	7ba010ef          	jal	ra,ffffffffc0201846 <pmm_init>
 
-    idt_init();  // init interrupt descriptor table
+    // 再次初始化中断描述符表（可能是冗余代码）
+    idt_init();
 ffffffffc0200090:	7b0000ef          	jal	ra,ffffffffc0200840 <idt_init>
 
-    clock_init();   // init clock interrupt
+    // 初始化时钟中断
+    clock_init();
 ffffffffc0200094:	3a0000ef          	jal	ra,ffffffffc0200434 <clock_init>
-    intr_enable();  // enable irq interrupt
+    // 启用中断响应
+    intr_enable();
 ffffffffc0200098:	79c000ef          	jal	ra,ffffffffc0200834 <intr_enable>
 
+    // 汇编指令：从机器模式返回（通常用于RISC-V架构）
     asm("mret");
 ffffffffc020009c:	30200073          	mret
+    // 汇编指令：触发断点异常（用于调试）
     asm("ebreak");
 ffffffffc02000a0:	9002                	ebreak
     
-    /* do nothing */
+    /* 无限循环，防止函数返回 */
     while (1)
 ffffffffc02000a2:	a001                	j	ffffffffc02000a2 <kern_init+0x4e>
 
@@ -707,7 +723,7 @@ ffffffffc0200440:	c0102573          	rdtime	a0
     cprintf("++ setup timer interrupts\n");
 }
 
-void clock_set_next_event(void) { sbi_set_timer(get_cycles() + timebase); }
+void clock_set_next_event(void) { sbi_set_timer(get_cycles() + timebase); }  //设置时钟事件 sbi_set_timer
 ffffffffc0200444:	67e1                	lui	a5,0x18
 ffffffffc0200446:	6a078793          	addi	a5,a5,1696 # 186a0 <kern_entry-0xffffffffc01e7960>
 ffffffffc020044a:	953e                	add	a0,a0,a5
@@ -728,7 +744,7 @@ ffffffffc0200464:	b9ad                	j	ffffffffc02000de <cprintf>
 ffffffffc0200466 <clock_set_next_event>:
     __asm__ __volatile__("rdtime %0" : "=r"(n));
 ffffffffc0200466:	c0102573          	rdtime	a0
-void clock_set_next_event(void) { sbi_set_timer(get_cycles() + timebase); }
+void clock_set_next_event(void) { sbi_set_timer(get_cycles() + timebase); }  //设置时钟事件 sbi_set_timer
 ffffffffc020046a:	67e1                	lui	a5,0x18
 ffffffffc020046c:	6a078793          	addi	a5,a5,1696 # 186a0 <kern_entry-0xffffffffc01e7960>
 ffffffffc0200470:	953e                	add	a0,a0,a5
@@ -1220,8 +1236,9 @@ ffffffffc020082e:	c2e53503          	ld	a0,-978(a0) # ffffffffc0207458 <memory_s
 ffffffffc0200832:	8082                	ret
 
 ffffffffc0200834 <intr_enable>:
-#include <intr.h>
 #include <riscv.h>
+
+//提供了设置中断使能位的接口
 
 /* intr_enable - enable irq interrupt */
 void intr_enable(void) { set_csr(sstatus, SSTATUS_SIE); }
@@ -1236,13 +1253,14 @@ ffffffffc020083a:	100177f3          	csrrci	a5,sstatus,2
 ffffffffc020083e:	8082                	ret
 
 ffffffffc0200840 <idt_init>:
-     */
-
+    //那么之后就可以通过sscratch的数值判断是内核态产生的中断还是用户态产生的中断
+    //我们现在是内核态所以给sscratch置零
     extern void __alltraps(void);
     /* Set sup0 scratch register to 0, indicating to exception vector
        that we are presently executing in the kernel */
     write_csr(sscratch, 0);
 ffffffffc0200840:	14005073          	csrwi	sscratch,0
+    //我们保证__alltraps的地址是四字节对齐的，将__alltraps这个符号的地址直接写到stvec寄存器
     /* Set the exception vector address */
     write_csr(stvec, &__alltraps);
 ffffffffc0200844:	00000797          	auipc	a5,0x0
@@ -1481,7 +1499,7 @@ ffffffffc0200a7e:	e60ff06f          	j	ffffffffc02000de <cprintf>
 
 ffffffffc0200a82 <interrupt_handler>:
 
-void interrupt_handler(struct trapframe *tf) {
+void interrupt_handler(struct trapframe *tf) { //中断处理（100次时钟中断）
     intptr_t cause = (tf->cause << 1) >> 1;
 ffffffffc0200a82:	11853783          	ld	a5,280(a0)
 ffffffffc0200a86:	472d                	li	a4,11
@@ -1518,7 +1536,7 @@ ffffffffc0200ac2:	e1cff06f          	j	ffffffffc02000de <cprintf>
 ffffffffc0200ac6:	00002517          	auipc	a0,0x2
 ffffffffc0200aca:	d3a50513          	addi	a0,a0,-710 # ffffffffc0202800 <commands+0x5d0>
 ffffffffc0200ace:	e10ff06f          	j	ffffffffc02000de <cprintf>
-void interrupt_handler(struct trapframe *tf) {
+void interrupt_handler(struct trapframe *tf) { //中断处理（100次时钟中断）
 ffffffffc0200ad2:	1141                	addi	sp,sp,-16
 ffffffffc0200ad4:	e406                	sd	ra,8(sp)
             break;
@@ -1586,18 +1604,18 @@ ffffffffc0200b3e:	a001                	j	ffffffffc0200b3e <interrupt_handler+0xb
 
 ffffffffc0200b40 <exception_handler>:
 
-void exception_handler(struct trapframe *tf) {
+void exception_handler(struct trapframe *tf) { //异常处理
 ffffffffc0200b40:	1101                	addi	sp,sp,-32
 ffffffffc0200b42:	e822                	sd	s0,16(sp)
     switch (tf->cause) {
 ffffffffc0200b44:	11853403          	ld	s0,280(a0)
-void exception_handler(struct trapframe *tf) {
+void exception_handler(struct trapframe *tf) { //异常处理
 ffffffffc0200b48:	e426                	sd	s1,8(sp)
 ffffffffc0200b4a:	e04a                	sd	s2,0(sp)
 ffffffffc0200b4c:	ec06                	sd	ra,24(sp)
     switch (tf->cause) {
 ffffffffc0200b4e:	490d                	li	s2,3
-void exception_handler(struct trapframe *tf) {
+void exception_handler(struct trapframe *tf) { //异常处理
 ffffffffc0200b50:	84aa                	mv	s1,a0
     switch (tf->cause) {
 ffffffffc0200b52:	05240f63          	beq	s0,s2,ffffffffc0200bb0 <exception_handler+0x70>
@@ -1687,25 +1705,26 @@ ffffffffc0200bf2:	bf61                	j	ffffffffc0200b8a <exception_handler+0x4
 ffffffffc0200bf4 <trap>:
 
 static inline void trap_dispatch(struct trapframe *tf) {
+    //scause的最高位是1（即表示一个负数），说明trap是由中断引起的
     if ((intptr_t)tf->cause < 0) {
 ffffffffc0200bf4:	11853783          	ld	a5,280(a0)
 ffffffffc0200bf8:	0007c363          	bltz	a5,ffffffffc0200bfe <trap+0xa>
         // interrupts
-        interrupt_handler(tf);
+        interrupt_handler(tf); //中断处理
     } else {
         // exceptions
-        exception_handler(tf);
+        exception_handler(tf); //异常处理
 ffffffffc0200bfc:	b791                	j	ffffffffc0200b40 <exception_handler>
-        interrupt_handler(tf);
+        interrupt_handler(tf); //中断处理
 ffffffffc0200bfe:	b551                	j	ffffffffc0200a82 <interrupt_handler>
 
 ffffffffc0200c00 <__alltraps>:
-    .endm
+
 
     .globl __alltraps
-    .align(2)
+    .align(2) #中断入口点 __alltraps必须四字节对齐
 __alltraps:
-    SAVE_ALL
+    SAVE_ALL #保存上下文
 ffffffffc0200c00:	14011073          	csrw	sscratch,sp
 ffffffffc0200c04:	712d                	addi	sp,sp,-288
 ffffffffc0200c06:	e002                	sd	zero,0(sp)
@@ -1750,12 +1769,15 @@ ffffffffc0200c5c:	e64a                	sd	s2,264(sp)
 ffffffffc0200c5e:	ea4e                	sd	s3,272(sp)
 ffffffffc0200c60:	ee52                	sd	s4,280(sp)
 
-    move  a0, sp
+    move  a0, sp #传递参数
 ffffffffc0200c62:	850a                	mv	a0,sp
+    #按照RISCV calling convention, a0寄存器传递参数给接下来调用的函数trap。
+    #trap是trap.c里面的一个C语言函数，也就是我们的中断处理程序
     jal trap
 ffffffffc0200c64:	f91ff0ef          	jal	ra,ffffffffc0200bf4 <trap>
 
 ffffffffc0200c68 <__trapret>:
+    # trap函数指向完之后，会回到这里向下继续执行__trapret里面的内容，RESTORE_ALL,sret
     # sp should be the same as before "jal trap"
 
     .globl __trapret
