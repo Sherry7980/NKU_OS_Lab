@@ -6217,7 +6217,7 @@ ffffffffc0203236:	02053423          	sd	zero,40(a0)
 ffffffffc020323a:	03050513          	addi	a0,a0,48
 ffffffffc020323e:	40f000ef          	jal	ra,ffffffffc0203e4c <memset>
         proc->tf = NULL;                            // 初始化陷阱帧为NULL
-        proc->pgdir = boot_pgdir_pa;                           // 初始化页目录表基址为0
+        proc->pgdir = boot_pgdir_pa;                            // 初始化页目录表基址为0
 ffffffffc0203242:	0000a797          	auipc	a5,0xa
 ffffffffc0203246:	25e7b783          	ld	a5,606(a5) # ffffffffc020d4a0 <boot_pgdir_pa>
 ffffffffc020324a:	f45c                	sd	a5,168(s0)
