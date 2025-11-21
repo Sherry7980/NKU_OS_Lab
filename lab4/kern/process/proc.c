@@ -106,17 +106,20 @@ alloc_proc(void)
          */
         
         proc->state = PROC_UNINIT;                  // 初始化进程状态为未初始化
-        proc->pid = -1;                             // 初始化进程ID为-1（无效ID）
+        proc->pid = -1;                             // 初始化进程ID为-1（无效ID），后续通过get_id()来分配有效pid
         proc->runs = 0;                             // 初始化运行次数为0
-        proc->kstack = 0;                           // 初始化内核栈为0
+        proc->kstack = 0;                           // 初始化内核栈为0（空指针），后续通过setup_kstack()为进程分配实际的内核栈空间
         proc->need_resched = 0;                     // 初始化不需要重新调度
-        proc->parent = NULL;                        // 初始化父进程为NULL
-        proc->mm = NULL;                            // 初始化内存管理结构为NULL
-        memset(&(proc->context), 0, sizeof(struct context));// 初始化上下文，全部设为0
+        proc->parent = NULL;                        // 初始化父进程指针为NULL
+        proc->mm = NULL;                            // 初始化内存管理结构指针为NULL
+        memset(&(proc->context), 0, sizeof(struct context)); // 初始化上下文结构体，全部设为0，为后续保存现场做准备
         proc->tf = NULL;                            // 初始化陷阱帧为NULL
-        proc->pgdir = 0;                            // 初始化页目录表基址为0
+        proc->pgdir = boot_pgdir_pa;                           // 初始化页目录表基址为0
         proc->flags = 0;                            // 初始化进程标志为0
-        memset(proc->name, 0, PROC_NAME_LEN + 1);   // 初始化进程名称为空字符串
+        memset(proc->name, 0, PROC_NAME_LEN + 1);   // 初始化进程名称数组全部清零，后续通过set_proc_name()设置具体的进程名称
+        // 补充
+        list_init(&(proc->list_link));
+        list_init(&(proc->hash_link));
     }
     return proc;
 }

@@ -70,11 +70,11 @@ alloc_proc(void)
 
 - `struct context context` 的含义及作用
   
-`context`是**保存进程执行的上下文**，也就是关键的几个寄存器的值。可用于在进程切换中还原之前的运行状态。在通过 `proc_run` 切换到`CPU`上运行时，需要调用 `switch_to` 将原进程的寄存器保存，以便下次切换回去时读出，保持之前的状态。
+`context`是**保存进程执行的上下文**，也就是关键的几个寄存器的值。可用于在**进程切换中**还原之前的运行状态。在通过 `proc_run` 切换到`CPU`上运行时，需要调用 `switch_to` 将原进程的寄存器保存，以便下次切换回去时读出，保持之前的状态。仅保存被调用者保存的寄存器：ra、sp、s0-s11，不保存临时寄存器。
   
 - `struct trapframe *tf` 的含义及作用
 
-`struct trapframe *tf` 是**陷阱帧指针**，用于在发生中断、异常或系统调用时保存和恢复处理器的完整执行状态。它包含了所有通用寄存器、程序计数器、状态寄存器等关键信息，既用于在中断处理期间保护现场确保正确返回，也用于在创建新进程时初始化其执行环境，是实现进程上下文切换和用户态-内核态转换的核心数据结构。
+`struct trapframe *tf` 是**陷阱帧指针**，用于在**发生中断、异常或系统调用时**保存和恢复处理器的完整执行状态。它包含了所有通用寄存器、程序计数器、状态寄存器等关键信息，既用于在中断处理期间保护现场确保正确返回，也用于在创建新进程时初始化其执行环境，是实现进程上下文切换和用户态-内核态转换的核心数据结构。保存所有通用寄存器，和四个特殊寄存器。
 
 ## 练习2：为新创建的内核线程分配资源
 
@@ -197,9 +197,9 @@ void proc_run(struct proc_struct *proc)
 
 ### 1.说明语句`local_intr_save(intr_flag);....local_intr_restore(intr_flag);`是如何实现开关中断的？
 
-`local_intr_save(intr_flag)` 和 `local_intr_restore(intr_flag) `是通过操作 RISC-V 的 `SSTATUS` 寄存器中的 `SIE (Supervisor Interrupt Enable)` 位来实现开关中断的。
+`local_intr_save(intr_flag)` 和 `local_intr_restore(intr_flag) `是通过操作 RISC-V 的 `SSTATUS` 寄存器中的 `SIE (Supervisor Interrupt Enable)` 位来实现开关中断的。（在`console.c`、`pmm.c`、`sched.c`中都有）
 
-当调用 `local_intr_save` 时，会读取 `sstatus` 寄存器，判断 `SIE` 位的值，如果该位为`1`，则说明中断是能进行的，这时需要调用`intr_disable`将该位置`0`，并返回`1`，将 `intr_flag` 赋值为`1`;如果该位为`0`，则说明中断此时已经不能进行，则返回`0`，将 `intr_flag` 赋值为`0`。这样就可以保证之后的代码执行时不会发生中断。
+当调用 `local_intr_save` 时，会读取 `sstatus` 寄存器，判断 `SIE` 位的值，如果该位为`1`，则说明中断是能进行的，这时需要调用`intr_disable`将该位置`0`，并返回`1`，将 `intr_flag` 赋值为`1`；如果该位为`0`，则说明中断此时已经不能进行，则返回`0`，将 `intr_flag` 赋值为`0`。这样就可以保证之后的代码执行时不会发生中断。
 
 当需要恢复中断时，调用`local_intr_restore`，需要判断 `intr_flag` 的值，如果其值为`1`，则需要调用`intr_enable`将 `sstatus` 寄存器的 `SIE`位置`1`，否则该位依然保持`0`。以此来恢复调用`local_intr_save` 之前的 `SIE` 的值。
 

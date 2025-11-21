@@ -36,26 +36,34 @@ struct context
 
 #define PROC_NAME_LEN 15
 #define MAX_PROCESS 4096
-#define MAX_PID (MAX_PROCESS * 2)
+#define MAX_PID (MAX_PROCESS * 2) //有效 PID 范围是：1 到 8191 (MAX_PID-1), 0 被保留给特殊的空闲进程
 
 extern list_entry_t proc_list;
 
 struct proc_struct
 {
-    enum proc_state state;        // Process state
-    int pid;                      // Process ID
-    int runs;                     // the running times of Proces
-    uintptr_t kstack;             // Process kernel stack
-    volatile bool need_resched;   // bool value: need to be rescheduled to release CPU?
-    struct proc_struct *parent;   // the parent process
-    struct mm_struct *mm;         // Process's memory management field
-    struct context context;       // Switch here to run process
-    struct trapframe *tf;         // Trap frame for current interrupt
-    uintptr_t pgdir;              // the base addr of Page Directroy Table(PDT)
-    uint32_t flags;               // Process flag
-    char name[PROC_NAME_LEN + 1]; // Process name
-    list_entry_t list_link;       // Process link list
-    list_entry_t hash_link;       // Process hash list
+    enum proc_state state;        // 进程状态（最上面的proc_state枚举类型_4种）
+    int pid;                      // 进程唯一标识符 PID
+    int runs;                     // 进程运行次数
+    uintptr_t kstack;             // 进程内核栈的虚拟地址指针
+    volatile bool need_resched;   // 调度标志，为true时表示需要让出CPU进行重新调度
+    struct proc_struct *parent;   // 指向父进程的指针，只有idle进程没有父进程
+    struct mm_struct *mm;         // 指向内存管理结构体 mm_struct(kern/mm/vmm.c种)，管理进程的虚拟内存空间。
+                                  // mm 保存了内存管理的信息，包括内存映射，虚存管理等内容
+
+    struct context context;       // 进程是上下文信息，用于进程切换
+    struct trapframe *tf;         // 指向当前中断的陷阱帧Trap Frame，保存中断/异常时的寄存器状态
+                                  // tf里保存了进程的中断帧。当进程从用户空间跳进内核空间的时候，进程的执行状态被保存在了中断帧中
+                                  // （注意这里需要保存的执行状态数量不同于上下文切换）
+                                  // 系统调用可能会改变用户寄存器的值，我们可以通过调整中断帧来使得系统调用返回特定的值
+
+    uintptr_t pgdir;              // 页表目录(PDT)的基地址，控制地址转换
+                                  // CPU 通过 satp 寄存器找到当前页表的根节点。pgdir字段保存的是每个进程的页表根节点的物理地址
+
+    uint32_t flags;               // 进程标志（存储各种状态）
+    char name[PROC_NAME_LEN + 1]; // 进程名称（PROC_NAME_LEN最大为15，+1是包含结尾符）
+    list_entry_t list_link;       // 将进程链接到全局进程双向链表 proc_list 中
+    list_entry_t hash_link;       // 将进程链接到进程哈希表中，便于快速查找
 };
 
 #define le2proc(le, member) \
