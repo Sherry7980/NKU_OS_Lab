@@ -80,28 +80,16 @@ static int do_cow_page_fault(struct mm_struct *mm, uint32_t error_code, uintptr_
     pte_t old_pte_value = *ptep;              // 保存原页表项
     
     struct Page *old_page = pte2page(*ptep);  // 从页表项的值 → 对应物理页的Page结构指针
-    int ref_count = page_ref(old_page);       // 获取引用计数
+    // int ref_count = page_ref(old_page);    // 获取引用计数
     
-    //（1）只有一个进程引用,直接恢复写权限（其他进程已经执行了COW，只剩当前进程使用）
-    if (ref_count == 1) { 
-        pte_t new_pte = (old_pte_value | PTE_W) & ~PTE_COW;
-        *ptep = new_pte;
-        
-        // 强制刷新TLB
-        asm volatile("sfence.vma zero, %0" :: "r"(la) : "memory");
-        asm volatile("fence" ::: "memory");
-        
-        return 0;
-    }
-    
-    //（2）多个进程共享,需要真正复制页面
+    // 多个进程共享,需要真正复制页面
     struct Page *new_page = alloc_page();   // 分配新物理页
     if (new_page == NULL) {                 
         return -E_NO_MEM; 
     }
     uintptr_t src_kva = (uintptr_t)page2kva(old_page); // 复制页面内容
     uintptr_t dst_kva = (uintptr_t)page2kva(new_page);
-    memcpy((void*)dst_kva, (void*)src_kva, PGSIZE); // 复制4KB数据
+    memcpy((void*)dst_kva, (void*)src_kva, PGSIZE);    // 复制4KB数据
     page_ref_dec(old_page); //原页面引用减一
     
     //（3）更新页表项

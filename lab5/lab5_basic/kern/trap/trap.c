@@ -31,17 +31,21 @@ static int
 pgfault_handler(struct trapframe *tf) {
     uintptr_t addr = tf->tval;
     
+    // 情况1：内核空间缺页
     if (current == NULL) {
         print_trapframe(tf);
         panic("page fault in kernel!");
     }
     
+    // 情况2：内核线程（无内存管理器）缺页
     if (current->mm == NULL) {
         print_trapframe(tf);
         panic("page fault in kernel thread!");
     }
     
-    return -E_INVAL;
+    // 对于非法访问（如faultread访问地址0），返回错误
+    // 让exception_handler杀死进程
+    return -E_INVAL;  // 总是返回失败
 }
 
 /* idt_init - initialize IDT to each of the entry points in kern/trap/vectors.S */
@@ -198,7 +202,7 @@ void exception_handler(struct trapframe *tf)
         break;
     case CAUSE_BREAKPOINT:
         cprintf("Breakpoint\n");
-        if (tf->gpr.a7 == 10)
+        if (tf->gpr.a7 == 10)  // 通过设置 a7 寄存器的值为10说明这不是一个普通的断点中断，而是要转发到 syscall()，从而产生中断
         {
             tf->epc += 4;
             syscall();
@@ -233,18 +237,18 @@ void exception_handler(struct trapframe *tf)
     case CAUSE_MACHINE_ECALL:
         cprintf("Environment call from M-mode\n");
         break;
-    case CAUSE_FETCH_PAGE_FAULT:
+    case CAUSE_FETCH_PAGE_FAULT:  // 指令获取缺页
         if ((ret = pgfault_handler(tf)) != 0) {
-            cprintf("Instruction page fault\n");
-            print_trapframe(tf);
+            cprintf("Instruction page fault\n");  // 打印缺页类型
+            print_trapframe(tf);                  // 打印异常时的CPU状态
             if (current != NULL) {
-                do_exit(-E_KILLED);
+                do_exit(-E_KILLED);               // 终止当前的用户态进程
             } else {
-                panic("kernel page fault");
+                panic("kernel page fault");       // 否则就触发内核panic
             }
         }
         break;
-    case CAUSE_LOAD_PAGE_FAULT:
+    case CAUSE_LOAD_PAGE_FAULT:  // 数据加载缺页
         if ((ret = pgfault_handler(tf)) != 0) {
             cprintf("Load page fault\n");
             print_trapframe(tf);
@@ -255,7 +259,7 @@ void exception_handler(struct trapframe *tf)
             }
         }
         break;
-    case CAUSE_STORE_PAGE_FAULT:
+    case CAUSE_STORE_PAGE_FAULT: // 数据存储/原子操作缺页
         if ((ret = pgfault_handler(tf)) != 0) {
             cprintf("Store/AMO page fault\n");
             print_trapframe(tf);

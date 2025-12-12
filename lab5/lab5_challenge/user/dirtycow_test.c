@@ -1,3 +1,22 @@
+/*
+Dirty COW 是Linux内核中的一个著名安全漏洞，该漏洞不是正常的COW功能，而是一个利用COW机制的竞态条件漏洞
+
+Dirty COW攻击步骤：
+1. 进程A：通过mmap映射一个只读文件到内存
+2. 进程A：fork()创建进程B（共享该只读页面）
+3. 【竞态条件开始】
+进程A：不断调用madvise(MADV_DONTNEED) → 告诉内核"这个页面不重要"
+进程B：不断写入该页面 → 触发COW处理
+（这里值得注意：因为mmap时用了MAP_PRIVATE，即使原文件是只读的，对私有映射的写入应该触发COW，fork之后进程B的那个页面自动带有COW标志，所以可写！）
+4. 关键：如果两个操作恰好同时发生：
+  - madvise让内核认为页面可以被丢弃
+  - COW处理正在分配新页面
+  - 内核可能错误地将写入应用到原只读页面！
+5. 结果：只读页面被非法修改！普通用户提升到root权限
+
+我们的上述代码不是Dirty COW攻击，只是测试COW机制的竞态条件安全性。
+*/
+
 // user/dirtycow_test.c
 #include <stdio.h>
 #include <ulib.h>

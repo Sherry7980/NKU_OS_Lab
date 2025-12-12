@@ -374,6 +374,25 @@ void exit_range(pde_t *pgdir, uintptr_t start, uintptr_t end)
  * CALL GRAPH: copy_mm-->dup_mmap-->copy_range
  */
 
+/*
+COW的工作流程总结
+1. Fork时：
+  - 可写页面：父子共享，子进程页表项去掉写权限+添加COW标志
+  - 只读页面：父子共享，完全复制页表项
+2. 子进程尝试写入时：
+  - CPU检测到无写权限 → 触发缺页异常 page fault
+  - 页错误处理程序看到COW标志 → 执行真正的复制：
+    1. 分配新物理页面
+    2. 复制原页面内容
+    3. 更新子进程页表项：设置写权限，清除COW标志
+    4. 原页面引用计数减1
+3. 父进程写入时：
+  - 正常写入（父进程页表项仍有写权限）
+  - 如果子进程还未写入：父子继续共享，子进程的COW状态不变
+  - 如果子进程已写入：父子使用不同的物理页面，互不影响
+*/
+
+// 负责在进程fork()时复制父进程的地址空间到子进程
 int copy_range(pde_t *to, pde_t *from, uintptr_t start, uintptr_t end, bool share)
 //（1）参数说明
 // to：子进程的页目录指针
@@ -411,7 +430,7 @@ int copy_range(pde_t *to, pde_t *from, uintptr_t start, uintptr_t end, bool shar
                 pte_t pte_flags = (*ptep) & 0x3FF;  // 保留父进程页表项的低10位（标志位）
                 pte_t new_pte = ((*ptep) & ~((pte_t)0x3FF)) |  // 保留高位的物理页号（PPN）
                                 ((pte_flags & ~PTE_W) | PTE_COW); 
-                                // 修改标志位：~PTE_W表示清楚写权限，这是触发COW的关键，PTE_COW是自定义的COW标志位
+                                // 修改标志位：~PTE_W表示清除写权限，这是触发COW的关键，PTE_COW是自定义的COW标志位
                 
                 // ===== 重要: 不修改父进程,只修改子进程 =====
                 *nptep = new_pte; //只设置子进程的页表项，父进程的页表项保持不变，仍保持写权限

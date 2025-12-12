@@ -545,7 +545,8 @@ bad_fork_cleanup_proc:
 //   3. call scheduler to switch to other process
 int do_exit(int error_code)
 {
-    if (current == idleproc)
+    // 禁止关键进程退出
+    if (current == idleproc)  
     {
         panic("idleproc exit.\n");
     }
@@ -553,34 +554,44 @@ int do_exit(int error_code)
     {
         panic("initproc exit.\n");
     }
+
+    // 释放用户内存资源
     struct mm_struct *mm = current->mm;
-    if (mm != NULL)
+    if (mm != NULL)      // 用户进程才有mm
     {
-        lsatp(boot_pgdir_pa);
-        if (mm_count_dec(mm) == 0)
+        lsatp(boot_pgdir_pa);  // 切换到内核页表
+        if (mm_count_dec(mm) == 0)  // 引用计数减1
         {
-            exit_mmap(mm);
-            put_pgdir(mm);
-            mm_destroy(mm);
+            exit_mmap(mm);    // 释放虚拟内存映射
+            put_pgdir(mm);    // 释放页目录
+            mm_destroy(mm);   // 销毁mm_struct
         }
-        current->mm = NULL;
+        current->mm = NULL;   // 标记mm已释放
     }
-    current->state = PROC_ZOMBIE;
-    current->exit_code = error_code;
+
+    current->state = PROC_ZOMBIE;     // 设置僵尸状态（进程已死但资源未完全释放）
+    current->exit_code = error_code;  // 保存退出码（供父进程通过wait()获取）
+    
+    // 关中断（临时保护区）
     bool intr_flag;
     struct proc_struct *proc;
     local_intr_save(intr_flag);
     {
         proc = current->parent;
+
+        // 1. 唤醒等待的父进程
         if (proc->wait_state == WT_CHILD)
         {
             wakeup_proc(proc);
         }
+
+        // 2. 处理子进程（孤儿进程收养）
         while (current->cptr != NULL)
         {
             proc = current->cptr;
             current->cptr = proc->optr;
 
+            // 将子进程过继给initproc
             proc->yptr = NULL;
             if ((proc->optr = initproc->cptr) != NULL)
             {
@@ -588,6 +599,8 @@ int do_exit(int error_code)
             }
             proc->parent = initproc;
             initproc->cptr = proc;
+
+            // 如果子进程也是僵尸，唤醒initproc
             if (proc->state == PROC_ZOMBIE)
             {
                 if (initproc->wait_state == WT_CHILD)
@@ -598,7 +611,7 @@ int do_exit(int error_code)
         }
     }
     local_intr_restore(intr_flag);
-    schedule();
+    schedule();  // 选择新进程运行
     panic("do_exit will not return!! %d.\n", current->pid);
 }
 
@@ -770,7 +783,7 @@ load_icode(unsigned char *binary, size_t size)
     tf->epc = (uintptr_t)elf->e_entry;
 
     /* set return value for exec in user mode (argc = 0) */
-    tf->gpr.a0 = 0;
+    tf->gpr.a0 = 0;  // 把 SSTATUS_SPP 设置为0，使得 sret 的时候能回到 U mode
 
     /* Adjust sstatus: clear SPP (so sret goes to user-mode), set SPIE (enable interrupts after sret) */
     tf->status = (sstatus & ~SSTATUS_SPP) | SSTATUS_SPIE;
@@ -793,11 +806,11 @@ bad_mm:
 int do_execve(const char *name, size_t len, unsigned char *binary, size_t size)
 {
     struct mm_struct *mm = current->mm;
-    if (!user_mem_check(mm, (uintptr_t)name, len, 0))
+    if (!user_mem_check(mm, (uintptr_t)name, len, 0)) //检查name的内存空间能否被访问
     {
         return -E_INVAL;
     }
-    if (len > PROC_NAME_LEN)
+    if (len > PROC_NAME_LEN) //进程名字的长度有上限 PROC_NAME_LEN，在proc.h定义
     {
         len = PROC_NAME_LEN;
     }
@@ -814,14 +827,15 @@ int do_execve(const char *name, size_t len, unsigned char *binary, size_t size)
         {
             exit_mmap(mm);
             put_pgdir(mm);
-            mm_destroy(mm);
+            mm_destroy(mm); //把进程当前占用的内存释放，之后重新分配内存
         }
         current->mm = NULL;
     }
+    //把新的程序加载到当前进程里的工作都在load_icode()函数里完成
     int ret;
     if ((ret = load_icode(binary, size)) != 0)
     {
-        goto execve_exit;
+        goto execve_exit; //返回不为0，则加载失败
     }
     set_proc_name(current, local_name);
     return 0;

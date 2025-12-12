@@ -1,20 +1,33 @@
 #include <riscv.h>
 
+# sscratch 寄存器：在用户态时保存内核栈指针，在内核态时保存0，用于快速区分中断来源（内核or用户）
+
+# 若在中断之前处于 U mode(用户态)
+# 则 sscratch 保存的是内核栈地址
+# 否则中断之前处于 S mode(内核态)，sscratch 保存的是 0
+
     .altmacro
     .align 2
-    .macro SAVE_ALL
+    .macro SAVE_ALL     # 中断进入
     LOCAL _restore_kernel_sp
     LOCAL _save_context
 
     # If coming from userspace, preserve the user stack pointer and load
     # the kernel stack pointer. If we came from the kernel, sscratch
     # will contain 0, and we should continue on the current stack.
-    csrrw sp, sscratch, sp
-    bnez sp, _save_context
+    
+    csrrw sp, sscratch, sp  #这里交换了sp和sccratch寄存器
+
+    #sp为0，说明之前是内核态，我们刚才把内核栈指针换到了sscratch, 需要再拿回来
+    #sp不为0时，说明之前是用户态，sp里现在存的就是内核栈指针，sscratch里现在是用户栈指针
+    #sp不为0，就跳到_save_context, 跳过_restore_kernel_sp的代码
+
+    bnez sp, _save_context   # 如果 sp != 0（来自用户态），跳转保存上下文
 
 _restore_kernel_sp:
-    csrr sp, sscratch
+    csrr sp, sscratch  #刚才把内核栈指针换到了sscratch, 需要再拿回来
 _save_context:
+    # 分配栈帧
     addi sp, sp, -36 * REGBYTES
     # save x registers
     STORE x0, 0*REGBYTES(sp)
@@ -52,13 +65,15 @@ _save_context:
     # get sr, epc, tval, cause
     # Set sscratch register to 0, so that if a recursive exception
     # occurs, the exception vector knows it came from the kernel
-    csrrw s0, sscratch, x0
+    
+    #如果之前是用户态产生的中断，用户栈指针从sscratch里挪到了s0寄存器， sscratch清零
+    srrw s0, sscratch, x0
     csrr s1, sstatus
     csrr s2, sepc
     csrr s3, 0x143
     csrr s4, scause
 
-    STORE s0, 2*REGBYTES(sp)
+    STORE s0, 2*REGBYTES(sp)   #如果之前是用户态发生中断，此时用户栈指针存到了内存里
     STORE s1, 32*REGBYTES(sp)
     STORE s2, 33*REGBYTES(sp)
     STORE s3, 34*REGBYTES(sp)
@@ -72,13 +87,15 @@ _save_context:
     LOAD s1, 32*REGBYTES(sp)
     LOAD s2, 33*REGBYTES(sp)
 
-    andi s0, s1, SSTATUS_SPP
+    andi s0, s1, SSTATUS_SPP    #可以通过SSTATUS_SPP的值判断之前是用户态还是内核态
+    # SPP=0：中断前是用户态，要返回到用户态
+    # SPP=1：中断前是内核态，要返回到内核态
     bnez s0, _restore_context
 
 _save_kernel_sp:
     # Save unwound kernel stack pointer in sscratch
-    addi s0, sp, 36 * REGBYTES
-    csrw sscratch, s0
+    addi s0, sp, 36 * REGBYTES   # 计算当前内核栈顶
+    csrw sscratch, s0            # 保存到 sscratch（供下次用户态中断使用）
 _restore_context:
     csrw sstatus, s1
     csrw sepc, s2
@@ -115,7 +132,7 @@ _restore_context:
     LOAD x30, 30*REGBYTES(sp)
     LOAD x31, 31*REGBYTES(sp)
     # restore sp last
-    LOAD x2, 2*REGBYTES(sp)
+    LOAD x2, 2*REGBYTES(sp)    #如果是用户态产生的中断，此时sp恢复为用户栈指针
     .endm
 
     .globl __alltraps

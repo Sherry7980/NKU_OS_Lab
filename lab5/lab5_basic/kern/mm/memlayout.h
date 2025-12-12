@@ -1,10 +1,11 @@
 #ifndef __KERN_MM_MEMLAYOUT_H__
 #define __KERN_MM_MEMLAYOUT_H__
+// 定义了操作系统的内存布局和内存管理相关数据结构
 
 /* This file contains the definitions for memory management in our OS. */
 
 /* *
- * Virtual memory map:                                          Permissions
+ * Virtual memory map: 虚拟地址空间布局图                                    Permissions
  *                                                              kernel/user
  *
  *     4G ------------------> +---------------------------------+
@@ -12,12 +13,12 @@
  *                            |         Empty Memory (*)        |
  *                            |                                 |
  *                            +---------------------------------+ 0xFB000000
- *                            |   Cur. Page Table (Kern, RW)    | RW/-- PTSIZE
+ *                            |   Cur. Page Table (Kern, RW)    | RW/-- PTSIZE   （虚拟页表区域）
  *     VPT -----------------> +---------------------------------+ 0xFAC00000
- *                            |        Invalid Memory (*)       | --/--
+ *                            |        Invalid Memory (*)       | --/--          （重映射的物理内存区域）
  *     KERNTOP -------------> +---------------------------------+ 0xF8000000
  *                            |                                 |
- *                            |    Remapped Physical Memory     | RW/-- KMEMSIZE
+ *                            |    Remapped Physical Memory     | RW/-- KMEMSIZE （映射了所有物理内存）
  *                            |                                 |
  *     KERNBASE ------------> +---------------------------------+ 0xC0000000
  *                            |        Invalid Memory (*)       | --/--
@@ -26,17 +27,17 @@
  *                            +---------------------------------+
  *                            |                                 |
  *                            :                                 :
- *                            |         ~~~~~~~~~~~~~~~~        |
+ *                            |         ~~~~~~~~~~~~~~~~        |                 （用户空间 —— 0x00000000 ~ USERTOP）
  *                            :                                 :
- *                            |                                 |
+ *                            |                                 |                   PS：用户栈向下增长、程序堆和代码段向上增长
  *                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *                            |       User Program & Heap       |
- *     UTEXT ---------------> +---------------------------------+ 0x00800000
+ *     UTEXT ---------------> +---------------------------------+ 0x00800000      （用户程序代码段开始）
  *                            |        Invalid Memory (*)       | --/--
  *                            |  - - - - - - - - - - - - - - -  |
  *                            |    User STAB Data (optional)    |
- *     USERBASE, USTAB------> +---------------------------------+ 0x00200000
- *                            |        Invalid Memory (*)       | --/--
+ *     USERBASE, USTAB------> +---------------------------------+ 0x00200000      （用户STAB调试信息）
+ *                            |        Invalid Memory (*)       | --/--           （无效内存，不可访问）
  *     0 -------------------> +---------------------------------+ 0x00000000
  * (*) Note: The kernel ensures that "Invalid Memory" is *never* mapped.
  *     "Empty Memory" is normally unmapped, but user programs may map pages
@@ -45,9 +46,9 @@
  * */
 
 /* All physical memory mapped at this address */
-#define KERNBASE 0xFFFFFFFFC0200000
-#define KMEMSIZE 0x7E00000 // the maximum amount of physical memory
-#define KERNTOP (KERNBASE + KMEMSIZE)
+#define KERNBASE 0xFFFFFFFFC0200000    // 内核基地址
+#define KMEMSIZE 0x7E00000             // 126MB物理内存
+#define KERNTOP (KERNBASE + KMEMSIZE)  // 内核顶部
 
 #define PHYSICAL_MEMORY_OFFSET 0xFFFFFFFF40000000
 /* *
@@ -60,18 +61,20 @@
 #define KSTACKPAGE 2                     // # of pages in kernel stack
 #define KSTACKSIZE (KSTACKPAGE * PGSIZE) // sizeof kernel stack
 
-#define USERTOP 0x80000000
-#define USTACKTOP USERTOP
-#define USTACKPAGE 256                   // # of pages in user stack
+#define USERTOP 0x80000000             // 用户空间顶部
+#define USTACKTOP USERTOP              // 用户栈顶
+#define USTACKPAGE 256                 // 用户栈256页 = 1MB
 #define USTACKSIZE (USTACKPAGE * PGSIZE) // sizeof user stack
 
-#define USERBASE 0x00200000
-#define UTEXT 0x00800000 // where user programs generally begin
+#define USERBASE 0x00200000            // 用户空间基地址
+#define UTEXT 0x00800000               // 用户程序入口点
 #define USTAB USERBASE   // the location of the user STABS data structure
 
+// 检查地址是否在用户空间
 #define USER_ACCESS(start, end) \
     (USERBASE <= (start) && (start) < (end) && (end) <= USERTOP)
 
+// 检查地址是否在内核空间
 #define KERN_ACCESS(start, end) \
     (KERNBASE <= (start) && (start) < (end) && (end) <= KERNTOP)
 
@@ -92,12 +95,12 @@ typedef pte_t swap_entry_t; // the pte can also be a swap entry
  * */
 struct Page
 {
-    int ref;                    // page frame's reference counter
-    uint64_t flags;             // array of flags that describe the status of the page frame
-    unsigned int property;      // the num of free block, used in first fit pm manager
-    list_entry_t page_link;     // free list link
-    list_entry_t pra_page_link; // used for pra (page replace algorithm)
-    uintptr_t pra_vaddr;        // used for pra (page replace algorithm)
+    int ref;                    // 引用计数（共享页数）
+    uint64_t flags;            // 状态标志位
+    unsigned int property;     // 连续空闲页数（用于首次适配算法）
+    list_entry_t page_link;    // 空闲链表链接
+    list_entry_t pra_page_link; // 页替换算法链表
+    uintptr_t pra_vaddr;       // 对应的虚拟地址
 };
 
 /* Flags describing the status of a page frame */

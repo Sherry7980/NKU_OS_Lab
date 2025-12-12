@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <pmm.h>
 #include <assert.h>
-
+//这里把系统调用进一步转发给proc.c的do_exit(), do_fork()等函数
 static int
 sys_exit(uint64_t arg[]) {
     int error_code = (int)arg[0];
@@ -32,6 +32,7 @@ sys_exec(uint64_t arg[]) {
     size_t len = (size_t)arg[1];
     unsigned char *binary = (unsigned char *)arg[2];
     size_t size = (size_t)arg[3];
+    //用户态调用的exec(), 归根结底是do_execve()
     return do_execve(name, len, binary, size);
 }
 
@@ -63,7 +64,8 @@ sys_pgdir(uint64_t arg[]) {
     //print_pgdir();
     return 0;
 }
-
+// 这里定义了函数指针的数组syscalls,
+// 把每个系统调用编号的下标上初始化为对应的函数指针
 static int (*syscalls[])(uint64_t arg[]) = {
     [SYS_exit]              sys_exit,
     [SYS_fork]              sys_fork,
@@ -82,8 +84,8 @@ void
 syscall(void) {
     struct trapframe *tf = current->tf;
     uint64_t arg[5];
-    int num = tf->gpr.a0;
-    if (num >= 0 && num < NUM_SYSCALLS) {
+    int num = tf->gpr.a0;  //a0寄存器保存了系统调用编号
+    if (num >= 0 && num < NUM_SYSCALLS) {  //防止syscalls[num]下标越界
         if (syscalls[num] != NULL) {
             arg[0] = tf->gpr.a1;
             arg[1] = tf->gpr.a2;
@@ -91,9 +93,11 @@ syscall(void) {
             arg[3] = tf->gpr.a4;
             arg[4] = tf->gpr.a5;
             tf->gpr.a0 = syscalls[num](arg);
+            //把寄存器里的参数取出来，转发给系统调用编号对应的函数进行处理
             return ;
         }
     }
+    //如果执行到这里，说明传入的系统调用编号还没有被实现，就崩掉了。
     print_trapframe(tf);
     panic("undefined syscall %d, pid = %d, name = %s.\n",
             num, current->pid, current->name);
