@@ -1756,7 +1756,7 @@ ffffffffc0200c20:	f85ff0ef          	jal	ra,ffffffffc0200ba4 <print_trapframe>
         panic("page fault in kernel!");
 ffffffffc0200c24:	00005617          	auipc	a2,0x5
 ffffffffc0200c28:	35c60613          	addi	a2,a2,860 # ffffffffc0205f80 <commands+0x568>
-ffffffffc0200c2c:	02400593          	li	a1,36
+ffffffffc0200c2c:	02500593          	li	a1,37
 ffffffffc0200c30:	00005517          	auipc	a0,0x5
 ffffffffc0200c34:	36850513          	addi	a0,a0,872 # ffffffffc0205f98 <commands+0x580>
 ffffffffc0200c38:	857ff0ef          	jal	ra,ffffffffc020048e <__panic>
@@ -1765,7 +1765,7 @@ ffffffffc0200c3c:	f69ff0ef          	jal	ra,ffffffffc0200ba4 <print_trapframe>
         panic("page fault in kernel thread!");
 ffffffffc0200c40:	00005617          	auipc	a2,0x5
 ffffffffc0200c44:	37060613          	addi	a2,a2,880 # ffffffffc0205fb0 <commands+0x598>
-ffffffffc0200c48:	02900593          	li	a1,41
+ffffffffc0200c48:	02b00593          	li	a1,43
 ffffffffc0200c4c:	00005517          	auipc	a0,0x5
 ffffffffc0200c50:	34c50513          	addi	a0,a0,844 # ffffffffc0205f98 <commands+0x580>
 ffffffffc0200c54:	83bff0ef          	jal	ra,ffffffffc020048e <__panic>
@@ -1921,21 +1921,21 @@ ffffffffc0200d4a:	b7fd                	j	ffffffffc0200d38 <exception_handler+0x4
         if ((ret = pgfault_handler(tf)) != 0) {
 ffffffffc0200d4c:	ebbff0ef          	jal	ra,ffffffffc0200c06 <pgfault_handler>
 ffffffffc0200d50:	0c050963          	beqz	a0,ffffffffc0200e22 <exception_handler+0x136>
-            cprintf("Instruction page fault\n");
+            cprintf("Instruction page fault\n");  // 打印缺页类型
 ffffffffc0200d54:	00005517          	auipc	a0,0x5
 ffffffffc0200d58:	47c50513          	addi	a0,a0,1148 # ffffffffc02061d0 <commands+0x7b8>
 ffffffffc0200d5c:	c38ff0ef          	jal	ra,ffffffffc0200194 <cprintf>
-            print_trapframe(tf);
+            print_trapframe(tf);                  // 打印异常时的CPU状态
 ffffffffc0200d60:	8522                	mv	a0,s0
 ffffffffc0200d62:	e43ff0ef          	jal	ra,ffffffffc0200ba4 <print_trapframe>
             if (current != NULL) {
 ffffffffc0200d66:	000aa797          	auipc	a5,0xaa
 ffffffffc0200d6a:	b927b783          	ld	a5,-1134(a5) # ffffffffc02aa8f8 <current>
 ffffffffc0200d6e:	ebbd                	bnez	a5,ffffffffc0200de4 <exception_handler+0xf8>
-                panic("kernel page fault");
+                panic("kernel page fault");       // 否则就触发内核panic
 ffffffffc0200d70:	00005617          	auipc	a2,0x5
 ffffffffc0200d74:	47860613          	addi	a2,a2,1144 # ffffffffc02061e8 <commands+0x7d0>
-ffffffffc0200d78:	0f300593          	li	a1,243
+ffffffffc0200d78:	0f700593          	li	a1,247
 ffffffffc0200d7c:	00005517          	auipc	a0,0x5
 ffffffffc0200d80:	21c50513          	addi	a0,a0,540 # ffffffffc0205f98 <commands+0x580>
 ffffffffc0200d84:	f0aff0ef          	jal	ra,ffffffffc020048e <__panic>
@@ -1956,7 +1956,7 @@ ffffffffc0200da8:	ef95                	bnez	a5,ffffffffc0200de4 <exception_handl
                 panic("kernel page fault");
 ffffffffc0200daa:	00005617          	auipc	a2,0x5
 ffffffffc0200dae:	43e60613          	addi	a2,a2,1086 # ffffffffc02061e8 <commands+0x7d0>
-ffffffffc0200db2:	0fe00593          	li	a1,254
+ffffffffc0200db2:	10200593          	li	a1,258
 ffffffffc0200db6:	00005517          	auipc	a0,0x5
 ffffffffc0200dba:	1e250513          	addi	a0,a0,482 # ffffffffc0205f98 <commands+0x580>
 ffffffffc0200dbe:	ed0ff0ef          	jal	ra,ffffffffc020048e <__panic>
@@ -1977,11 +1977,11 @@ ffffffffc0200de2:	c7c1                	beqz	a5,ffffffffc0200e6a <exception_handl
 }
 ffffffffc0200de4:	6402                	ld	s0,0(sp)
 ffffffffc0200de6:	60a2                	ld	ra,8(sp)
-                do_exit(-E_KILLED);
+                do_exit(-E_KILLED);               // 终止当前的用户态进程
 ffffffffc0200de8:	555d                	li	a0,-9
 }
 ffffffffc0200dea:	0141                	addi	sp,sp,16
-                do_exit(-E_KILLED);
+                do_exit(-E_KILLED);               // 终止当前的用户态进程
 ffffffffc0200dec:	6c40306f          	j	ffffffffc02044b0 <do_exit>
         cprintf("Instruction address misaligned\n");
 ffffffffc0200df0:	00005517          	auipc	a0,0x5
@@ -1999,7 +1999,7 @@ ffffffffc0200e0c:	b735                	j	ffffffffc0200d38 <exception_handler+0x4
 ffffffffc0200e0e:	00005517          	auipc	a0,0x5
 ffffffffc0200e12:	2ea50513          	addi	a0,a0,746 # ffffffffc02060f8 <commands+0x6e0>
 ffffffffc0200e16:	b7eff0ef          	jal	ra,ffffffffc0200194 <cprintf>
-        if (tf->gpr.a7 == 10)
+        if (tf->gpr.a7 == 10)  // 通过设置 a7 寄存器的值为10说明这不是一个普通的断点中断，而是要转发到 syscall()，从而产生中断
 ffffffffc0200e1a:	6458                	ld	a4,136(s0)
 ffffffffc0200e1c:	47a9                	li	a5,10
 ffffffffc0200e1e:	eef70fe3          	beq	a4,a5,ffffffffc0200d1c <exception_handler+0x30>
@@ -2031,14 +2031,14 @@ ffffffffc0200e50:	bb91                	j	ffffffffc0200ba4 <print_trapframe>
         panic("AMO address misaligned\n");
 ffffffffc0200e52:	00005617          	auipc	a2,0x5
 ffffffffc0200e56:	2ee60613          	addi	a2,a2,750 # ffffffffc0206140 <commands+0x728>
-ffffffffc0200e5a:	0d700593          	li	a1,215
+ffffffffc0200e5a:	0db00593          	li	a1,219
 ffffffffc0200e5e:	00005517          	auipc	a0,0x5
 ffffffffc0200e62:	13a50513          	addi	a0,a0,314 # ffffffffc0205f98 <commands+0x580>
 ffffffffc0200e66:	e28ff0ef          	jal	ra,ffffffffc020048e <__panic>
                 panic("kernel page fault");
 ffffffffc0200e6a:	00005617          	auipc	a2,0x5
 ffffffffc0200e6e:	37e60613          	addi	a2,a2,894 # ffffffffc02061e8 <commands+0x7d0>
-ffffffffc0200e72:	10900593          	li	a1,265
+ffffffffc0200e72:	10d00593          	li	a1,269
 ffffffffc0200e76:	00005517          	auipc	a0,0x5
 ffffffffc0200e7a:	12250513          	addi	a0,a0,290 # ffffffffc0205f98 <commands+0x580>
 ffffffffc0200e7e:	e10ff0ef          	jal	ra,ffffffffc020048e <__panic>
@@ -8062,7 +8062,7 @@ ffffffffc0203f8a:	a0afc0ef          	jal	ra,ffffffffc0200194 <cprintf>
     panic("user_main execve failed.\n");
 ffffffffc0203f8e:	00003617          	auipc	a2,0x3
 ffffffffc0203f92:	0f260613          	addi	a2,a2,242 # ffffffffc0207080 <default_pmm_manager+0xa50>
-ffffffffc0203f96:	3db00593          	li	a1,987
+ffffffffc0203f96:	3e900593          	li	a1,1001
 ffffffffc0203f9a:	00003517          	auipc	a0,0x3
 ffffffffc0203f9e:	10650513          	addi	a0,a0,262 # ffffffffc02070a0 <default_pmm_manager+0xa70>
 ffffffffc0203fa2:	cecfc0ef          	jal	ra,ffffffffc020048e <__panic>
@@ -8718,7 +8718,7 @@ ffffffffc02044b0 <do_exit>:
 {
 ffffffffc02044b0:	7179                	addi	sp,sp,-48
 ffffffffc02044b2:	f022                	sd	s0,32(sp)
-    if (current == idleproc)
+    if (current == idleproc)  
 ffffffffc02044b4:	000a6417          	auipc	s0,0xa6
 ffffffffc02044b8:	44440413          	addi	s0,s0,1092 # ffffffffc02aa8f8 <current>
 ffffffffc02044bc:	601c                	ld	a5,0(s0)
@@ -8728,7 +8728,7 @@ ffffffffc02044c0:	ec26                	sd	s1,24(sp)
 ffffffffc02044c2:	e84a                	sd	s2,16(sp)
 ffffffffc02044c4:	e44e                	sd	s3,8(sp)
 ffffffffc02044c6:	e052                	sd	s4,0(sp)
-    if (current == idleproc)
+    if (current == idleproc)  
 ffffffffc02044c8:	000a6717          	auipc	a4,0xa6
 ffffffffc02044cc:	43873703          	ld	a4,1080(a4) # ffffffffc02aa900 <idleproc>
 ffffffffc02044d0:	0ce78c63          	beq	a5,a4,ffffffffc02045a8 <do_exit+0xf8>
@@ -8740,7 +8740,7 @@ ffffffffc02044de:	0ee78b63          	beq	a5,a4,ffffffffc02045d4 <do_exit+0x124>
     struct mm_struct *mm = current->mm;
 ffffffffc02044e2:	0287b983          	ld	s3,40(a5)
 ffffffffc02044e6:	892a                	mv	s2,a0
-    if (mm != NULL)
+    if (mm != NULL)      // 用户进程才有mm
 ffffffffc02044e8:	02098663          	beqz	s3,ffffffffc0204514 <do_exit+0x64>
 ffffffffc02044ec:	000a6797          	auipc	a5,0xa6
 ffffffffc02044f0:	3dc7b783          	ld	a5,988(a5) # ffffffffc02aa8c8 <boot_pgdir_pa>
@@ -8753,16 +8753,16 @@ ffffffffc02044fc:	18079073          	csrw	satp,a5
 ffffffffc0204500:	0309a783          	lw	a5,48(s3)
 ffffffffc0204504:	fff7871b          	addiw	a4,a5,-1
 ffffffffc0204508:	02e9a823          	sw	a4,48(s3)
-        if (mm_count_dec(mm) == 0)
+        if (mm_count_dec(mm) == 0)  // 引用计数减1
 ffffffffc020450c:	cb55                	beqz	a4,ffffffffc02045c0 <do_exit+0x110>
-        current->mm = NULL;
+        current->mm = NULL;   // 标记mm已释放
 ffffffffc020450e:	601c                	ld	a5,0(s0)
 ffffffffc0204510:	0207b423          	sd	zero,40(a5)
-    current->state = PROC_ZOMBIE;
+    current->state = PROC_ZOMBIE;     // 设置僵尸状态（进程已死但资源未完全释放）
 ffffffffc0204514:	601c                	ld	a5,0(s0)
 ffffffffc0204516:	470d                	li	a4,3
 ffffffffc0204518:	c398                	sw	a4,0(a5)
-    current->exit_code = error_code;
+    current->exit_code = error_code;  // 保存退出码（供父进程通过wait()获取）
 ffffffffc020451a:	0f27a423          	sw	s2,232(a5)
     if (read_csr(sstatus) & SSTATUS_SIE)
 ffffffffc020451e:	100027f3          	csrr	a5,sstatus
@@ -8827,13 +8827,13 @@ ffffffffc0204578:	377000ef          	jal	ra,ffffffffc02050ee <wakeup_proc>
 ffffffffc020457c:	b7f9                	j	ffffffffc020454a <do_exit+0x9a>
     if (flag)
 ffffffffc020457e:	020a1263          	bnez	s4,ffffffffc02045a2 <do_exit+0xf2>
-    schedule();
+    schedule();  // 选择新进程运行
 ffffffffc0204582:	3ed000ef          	jal	ra,ffffffffc020516e <schedule>
     panic("do_exit will not return!! %d.\n", current->pid);
 ffffffffc0204586:	601c                	ld	a5,0(s0)
 ffffffffc0204588:	00003617          	auipc	a2,0x3
 ffffffffc020458c:	b7860613          	addi	a2,a2,-1160 # ffffffffc0207100 <default_pmm_manager+0xad0>
-ffffffffc0204590:	25a00593          	li	a1,602
+ffffffffc0204590:	26700593          	li	a1,615
 ffffffffc0204594:	43d4                	lw	a3,4(a5)
 ffffffffc0204596:	00003517          	auipc	a0,0x3
 ffffffffc020459a:	b0a50513          	addi	a0,a0,-1270 # ffffffffc02070a0 <default_pmm_manager+0xa70>
@@ -8844,24 +8844,24 @@ ffffffffc02045a6:	bff1                	j	ffffffffc0204582 <do_exit+0xd2>
         panic("idleproc exit.\n");
 ffffffffc02045a8:	00003617          	auipc	a2,0x3
 ffffffffc02045ac:	b3860613          	addi	a2,a2,-1224 # ffffffffc02070e0 <default_pmm_manager+0xab0>
-ffffffffc02045b0:	22600593          	li	a1,550
+ffffffffc02045b0:	22700593          	li	a1,551
 ffffffffc02045b4:	00003517          	auipc	a0,0x3
 ffffffffc02045b8:	aec50513          	addi	a0,a0,-1300 # ffffffffc02070a0 <default_pmm_manager+0xa70>
 ffffffffc02045bc:	ed3fb0ef          	jal	ra,ffffffffc020048e <__panic>
-            exit_mmap(mm);
+            exit_mmap(mm);    // 释放虚拟内存映射
 ffffffffc02045c0:	854e                	mv	a0,s3
 ffffffffc02045c2:	ca0ff0ef          	jal	ra,ffffffffc0203a62 <exit_mmap>
-            put_pgdir(mm);
+            put_pgdir(mm);    // 释放页目录
 ffffffffc02045c6:	854e                	mv	a0,s3
 ffffffffc02045c8:	9dfff0ef          	jal	ra,ffffffffc0203fa6 <put_pgdir>
-            mm_destroy(mm);
+            mm_destroy(mm);   // 销毁mm_struct
 ffffffffc02045cc:	854e                	mv	a0,s3
 ffffffffc02045ce:	af8ff0ef          	jal	ra,ffffffffc02038c6 <mm_destroy>
 ffffffffc02045d2:	bf35                	j	ffffffffc020450e <do_exit+0x5e>
         panic("initproc exit.\n");
 ffffffffc02045d4:	00003617          	auipc	a2,0x3
 ffffffffc02045d8:	b1c60613          	addi	a2,a2,-1252 # ffffffffc02070f0 <default_pmm_manager+0xac0>
-ffffffffc02045dc:	22a00593          	li	a1,554
+ffffffffc02045dc:	22b00593          	li	a1,555
 ffffffffc02045e0:	00003517          	auipc	a0,0x3
 ffffffffc02045e4:	ac050513          	addi	a0,a0,-1344 # ffffffffc02070a0 <default_pmm_manager+0xa70>
 ffffffffc02045e8:	ea7fb0ef          	jal	ra,ffffffffc020048e <__panic>
@@ -9083,7 +9083,7 @@ ffffffffc0204798:	cf7fb0ef          	jal	ra,ffffffffc020048e <__panic>
         panic("wait idleproc or initproc.\n");
 ffffffffc020479c:	00003617          	auipc	a2,0x3
 ffffffffc02047a0:	98460613          	addi	a2,a2,-1660 # ffffffffc0207120 <default_pmm_manager+0xaf0>
-ffffffffc02047a4:	38300593          	li	a1,899
+ffffffffc02047a4:	39100593          	li	a1,913
 ffffffffc02047a8:	00003517          	auipc	a0,0x3
 ffffffffc02047ac:	8f850513          	addi	a0,a0,-1800 # ffffffffc02070a0 <default_pmm_manager+0xa70>
 ffffffffc02047b0:	cdffb0ef          	jal	ra,ffffffffc020048e <__panic>
@@ -9177,14 +9177,14 @@ ffffffffc0204858:	00003697          	auipc	a3,0x3
 ffffffffc020485c:	93068693          	addi	a3,a3,-1744 # ffffffffc0207188 <default_pmm_manager+0xb58>
 ffffffffc0204860:	00002617          	auipc	a2,0x2
 ffffffffc0204864:	a2060613          	addi	a2,a2,-1504 # ffffffffc0206280 <commands+0x868>
-ffffffffc0204868:	3f100593          	li	a1,1009
+ffffffffc0204868:	3ff00593          	li	a1,1023
 ffffffffc020486c:	00003517          	auipc	a0,0x3
 ffffffffc0204870:	83450513          	addi	a0,a0,-1996 # ffffffffc02070a0 <default_pmm_manager+0xa70>
 ffffffffc0204874:	c1bfb0ef          	jal	ra,ffffffffc020048e <__panic>
         panic("create user_main failed.\n");
 ffffffffc0204878:	00003617          	auipc	a2,0x3
 ffffffffc020487c:	8c860613          	addi	a2,a2,-1848 # ffffffffc0207140 <default_pmm_manager+0xb10>
-ffffffffc0204880:	3e800593          	li	a1,1000
+ffffffffc0204880:	3f600593          	li	a1,1014
 ffffffffc0204884:	00003517          	auipc	a0,0x3
 ffffffffc0204888:	81c50513          	addi	a0,a0,-2020 # ffffffffc02070a0 <default_pmm_manager+0xa70>
 ffffffffc020488c:	c03fb0ef          	jal	ra,ffffffffc020048e <__panic>
@@ -9193,7 +9193,7 @@ ffffffffc0204890:	00003697          	auipc	a3,0x3
 ffffffffc0204894:	98868693          	addi	a3,a3,-1656 # ffffffffc0207218 <default_pmm_manager+0xbe8>
 ffffffffc0204898:	00002617          	auipc	a2,0x2
 ffffffffc020489c:	9e860613          	addi	a2,a2,-1560 # ffffffffc0206280 <commands+0x868>
-ffffffffc02048a0:	3f400593          	li	a1,1012
+ffffffffc02048a0:	40200593          	li	a1,1026
 ffffffffc02048a4:	00002517          	auipc	a0,0x2
 ffffffffc02048a8:	7fc50513          	addi	a0,a0,2044 # ffffffffc02070a0 <default_pmm_manager+0xa70>
 ffffffffc02048ac:	be3fb0ef          	jal	ra,ffffffffc020048e <__panic>
@@ -9202,7 +9202,7 @@ ffffffffc02048b0:	00003697          	auipc	a3,0x3
 ffffffffc02048b4:	93868693          	addi	a3,a3,-1736 # ffffffffc02071e8 <default_pmm_manager+0xbb8>
 ffffffffc02048b8:	00002617          	auipc	a2,0x2
 ffffffffc02048bc:	9c860613          	addi	a2,a2,-1592 # ffffffffc0206280 <commands+0x868>
-ffffffffc02048c0:	3f300593          	li	a1,1011
+ffffffffc02048c0:	40100593          	li	a1,1025
 ffffffffc02048c4:	00002517          	auipc	a0,0x2
 ffffffffc02048c8:	7dc50513          	addi	a0,a0,2012 # ffffffffc02070a0 <default_pmm_manager+0xa70>
 ffffffffc02048cc:	bc3fb0ef          	jal	ra,ffffffffc020048e <__panic>
@@ -9211,7 +9211,7 @@ ffffffffc02048d0:	00003697          	auipc	a3,0x3
 ffffffffc02048d4:	90868693          	addi	a3,a3,-1784 # ffffffffc02071d8 <default_pmm_manager+0xba8>
 ffffffffc02048d8:	00002617          	auipc	a2,0x2
 ffffffffc02048dc:	9a860613          	addi	a2,a2,-1624 # ffffffffc0206280 <commands+0x868>
-ffffffffc02048e0:	3f200593          	li	a1,1010
+ffffffffc02048e0:	40000593          	li	a1,1024
 ffffffffc02048e4:	00002517          	auipc	a0,0x2
 ffffffffc02048e8:	7bc50513          	addi	a0,a0,1980 # ffffffffc02070a0 <default_pmm_manager+0xa70>
 ffffffffc02048ec:	ba3fb0ef          	jal	ra,ffffffffc020048e <__panic>
@@ -9235,7 +9235,7 @@ ffffffffc020490a:	f4de                	sd	s7,104(sp)
 ffffffffc020490c:	892a                	mv	s2,a0
 ffffffffc020490e:	8bb2                	mv	s7,a2
 ffffffffc0204910:	84ae                	mv	s1,a1
-    if (!user_mem_check(mm, (uintptr_t)name, len, 0))
+    if (!user_mem_check(mm, (uintptr_t)name, len, 0)) //检查name的内存空间能否被访问
 ffffffffc0204912:	862e                	mv	a2,a1
 ffffffffc0204914:	4681                	li	a3,0
 ffffffffc0204916:	85aa                	mv	a1,a0
@@ -9250,7 +9250,7 @@ ffffffffc0204924:	f0e2                	sd	s8,96(sp)
 ffffffffc0204926:	ece6                	sd	s9,88(sp)
 ffffffffc0204928:	e8ea                	sd	s10,80(sp)
 ffffffffc020492a:	f05e                	sd	s7,32(sp)
-    if (!user_mem_check(mm, (uintptr_t)name, len, 0))
+    if (!user_mem_check(mm, (uintptr_t)name, len, 0)) //检查name的内存空间能否被访问
 ffffffffc020492c:	cd0ff0ef          	jal	ra,ffffffffc0203dfc <user_mem_check>
 ffffffffc0204930:	40050c63          	beqz	a0,ffffffffc0204d48 <do_execve+0x458>
     memset(local_name, 0, sizeof(local_name));
@@ -9450,7 +9450,7 @@ ffffffffc0204aea:	4581                	li	a1,0
 ffffffffc0204aec:	e81c                	sd	a5,16(s0)
     tf->epc = (uintptr_t)elf->e_entry;
 ffffffffc0204aee:	10e43423          	sd	a4,264(s0)
-    tf->gpr.a0 = 0;
+    tf->gpr.a0 = 0;  // 把 SSTATUS_SPP 设置为0，使得 sret 的时候能回到 U mode
 ffffffffc0204af2:	04043823          	sd	zero,80(s0)
     tf->status = (sstatus & ~SSTATUS_SPP) | SSTATUS_SPIE;
 ffffffffc0204af6:	10943023          	sd	s1,256(s0)
@@ -9493,7 +9493,7 @@ ffffffffc0204b3e:	e40786e3          	beqz	a5,ffffffffc020498a <do_execve+0x9a>
         panic("load_icode: current->mm must be empty.\n");
 ffffffffc0204b42:	00002617          	auipc	a2,0x2
 ffffffffc0204b46:	72660613          	addi	a2,a2,1830 # ffffffffc0207268 <default_pmm_manager+0xc38>
-ffffffffc0204b4a:	26600593          	li	a1,614
+ffffffffc0204b4a:	27300593          	li	a1,627
 ffffffffc0204b4e:	00002517          	auipc	a0,0x2
 ffffffffc0204b52:	55250513          	addi	a0,a0,1362 # ffffffffc02070a0 <default_pmm_manager+0xa70>
 ffffffffc0204b56:	939fb0ef          	jal	ra,ffffffffc020048e <__panic>
@@ -9636,7 +9636,7 @@ ffffffffc0204c4c:	e17fe0ef          	jal	ra,ffffffffc0203a62 <exit_mmap>
             put_pgdir(mm);
 ffffffffc0204c50:	854e                	mv	a0,s3
 ffffffffc0204c52:	b54ff0ef          	jal	ra,ffffffffc0203fa6 <put_pgdir>
-            mm_destroy(mm);
+            mm_destroy(mm); //把进程当前占用的内存释放，之后重新分配内存
 ffffffffc0204c56:	854e                	mv	a0,s3
 ffffffffc0204c58:	c6ffe0ef          	jal	ra,ffffffffc02038c6 <mm_destroy>
 ffffffffc0204c5c:	b31d                	j	ffffffffc0204982 <do_execve+0x92>
@@ -9695,7 +9695,7 @@ ffffffffc0204cc6:	00002697          	auipc	a3,0x2
 ffffffffc0204cca:	5ca68693          	addi	a3,a3,1482 # ffffffffc0207290 <default_pmm_manager+0xc60>
 ffffffffc0204cce:	00001617          	auipc	a2,0x1
 ffffffffc0204cd2:	5b260613          	addi	a2,a2,1458 # ffffffffc0206280 <commands+0x868>
-ffffffffc0204cd6:	2cf00593          	li	a1,719
+ffffffffc0204cd6:	2dc00593          	li	a1,732
 ffffffffc0204cda:	00002517          	auipc	a0,0x2
 ffffffffc0204cde:	3c650513          	addi	a0,a0,966 # ffffffffc02070a0 <default_pmm_manager+0xa70>
 ffffffffc0204ce2:	facfb0ef          	jal	ra,ffffffffc020048e <__panic>
@@ -9769,7 +9769,7 @@ ffffffffc0204d6c:	f22fb0ef          	jal	ra,ffffffffc020048e <__panic>
     current->pgdir = PADDR(mm->pgdir);
 ffffffffc0204d70:	00002617          	auipc	a2,0x2
 ffffffffc0204d74:	9a060613          	addi	a2,a2,-1632 # ffffffffc0206710 <default_pmm_manager+0xe0>
-ffffffffc0204d78:	2ee00593          	li	a1,750
+ffffffffc0204d78:	2fb00593          	li	a1,763
 ffffffffc0204d7c:	00002517          	auipc	a0,0x2
 ffffffffc0204d80:	32450513          	addi	a0,a0,804 # ffffffffc02070a0 <default_pmm_manager+0xa70>
 ffffffffc0204d84:	f0afb0ef          	jal	ra,ffffffffc020048e <__panic>
@@ -9778,7 +9778,7 @@ ffffffffc0204d88:	00002697          	auipc	a3,0x2
 ffffffffc0204d8c:	62068693          	addi	a3,a3,1568 # ffffffffc02073a8 <default_pmm_manager+0xd78>
 ffffffffc0204d90:	00001617          	auipc	a2,0x1
 ffffffffc0204d94:	4f060613          	addi	a2,a2,1264 # ffffffffc0206280 <commands+0x868>
-ffffffffc0204d98:	2e900593          	li	a1,745
+ffffffffc0204d98:	2f600593          	li	a1,758
 ffffffffc0204d9c:	00002517          	auipc	a0,0x2
 ffffffffc0204da0:	30450513          	addi	a0,a0,772 # ffffffffc02070a0 <default_pmm_manager+0xa70>
 ffffffffc0204da4:	eeafb0ef          	jal	ra,ffffffffc020048e <__panic>
@@ -9787,7 +9787,7 @@ ffffffffc0204da8:	00002697          	auipc	a3,0x2
 ffffffffc0204dac:	5b868693          	addi	a3,a3,1464 # ffffffffc0207360 <default_pmm_manager+0xd30>
 ffffffffc0204db0:	00001617          	auipc	a2,0x1
 ffffffffc0204db4:	4d060613          	addi	a2,a2,1232 # ffffffffc0206280 <commands+0x868>
-ffffffffc0204db8:	2e800593          	li	a1,744
+ffffffffc0204db8:	2f500593          	li	a1,757
 ffffffffc0204dbc:	00002517          	auipc	a0,0x2
 ffffffffc0204dc0:	2e450513          	addi	a0,a0,740 # ffffffffc02070a0 <default_pmm_manager+0xa70>
 ffffffffc0204dc4:	ecafb0ef          	jal	ra,ffffffffc020048e <__panic>
@@ -9796,7 +9796,7 @@ ffffffffc0204dc8:	00002697          	auipc	a3,0x2
 ffffffffc0204dcc:	55068693          	addi	a3,a3,1360 # ffffffffc0207318 <default_pmm_manager+0xce8>
 ffffffffc0204dd0:	00001617          	auipc	a2,0x1
 ffffffffc0204dd4:	4b060613          	addi	a2,a2,1200 # ffffffffc0206280 <commands+0x868>
-ffffffffc0204dd8:	2e700593          	li	a1,743
+ffffffffc0204dd8:	2f400593          	li	a1,756
 ffffffffc0204ddc:	00002517          	auipc	a0,0x2
 ffffffffc0204de0:	2c450513          	addi	a0,a0,708 # ffffffffc02070a0 <default_pmm_manager+0xa70>
 ffffffffc0204de4:	eaafb0ef          	jal	ra,ffffffffc020048e <__panic>
@@ -9805,7 +9805,7 @@ ffffffffc0204de8:	00002697          	auipc	a3,0x2
 ffffffffc0204dec:	4e868693          	addi	a3,a3,1256 # ffffffffc02072d0 <default_pmm_manager+0xca0>
 ffffffffc0204df0:	00001617          	auipc	a2,0x1
 ffffffffc0204df4:	49060613          	addi	a2,a2,1168 # ffffffffc0206280 <commands+0x868>
-ffffffffc0204df8:	2e600593          	li	a1,742
+ffffffffc0204df8:	2f300593          	li	a1,755
 ffffffffc0204dfc:	00002517          	auipc	a0,0x2
 ffffffffc0204e00:	2a450513          	addi	a0,a0,676 # ffffffffc02070a0 <default_pmm_manager+0xa70>
 ffffffffc0204e04:	e8afb0ef          	jal	ra,ffffffffc020048e <__panic>
@@ -10087,14 +10087,14 @@ ffffffffc0204ff8:	bf4d                	j	ffffffffc0204faa <proc_init+0xd8>
         panic("create init_main failed.\n");
 ffffffffc0204ffa:	00002617          	auipc	a2,0x2
 ffffffffc0204ffe:	41660613          	addi	a2,a2,1046 # ffffffffc0207410 <default_pmm_manager+0xde0>
-ffffffffc0205002:	41700593          	li	a1,1047
+ffffffffc0205002:	42500593          	li	a1,1061
 ffffffffc0205006:	00002517          	auipc	a0,0x2
 ffffffffc020500a:	09a50513          	addi	a0,a0,154 # ffffffffc02070a0 <default_pmm_manager+0xa70>
 ffffffffc020500e:	c80fb0ef          	jal	ra,ffffffffc020048e <__panic>
         panic("cannot alloc idleproc.\n");
 ffffffffc0205012:	00002617          	auipc	a2,0x2
 ffffffffc0205016:	3de60613          	addi	a2,a2,990 # ffffffffc02073f0 <default_pmm_manager+0xdc0>
-ffffffffc020501a:	40800593          	li	a1,1032
+ffffffffc020501a:	41600593          	li	a1,1046
 ffffffffc020501e:	00002517          	auipc	a0,0x2
 ffffffffc0205022:	08250513          	addi	a0,a0,130 # ffffffffc02070a0 <default_pmm_manager+0xa70>
 ffffffffc0205026:	c68fb0ef          	jal	ra,ffffffffc020048e <__panic>
@@ -10103,7 +10103,7 @@ ffffffffc020502a:	00002697          	auipc	a3,0x2
 ffffffffc020502e:	43668693          	addi	a3,a3,1078 # ffffffffc0207460 <default_pmm_manager+0xe30>
 ffffffffc0205032:	00001617          	auipc	a2,0x1
 ffffffffc0205036:	24e60613          	addi	a2,a2,590 # ffffffffc0206280 <commands+0x868>
-ffffffffc020503a:	41e00593          	li	a1,1054
+ffffffffc020503a:	42c00593          	li	a1,1068
 ffffffffc020503e:	00002517          	auipc	a0,0x2
 ffffffffc0205042:	06250513          	addi	a0,a0,98 # ffffffffc02070a0 <default_pmm_manager+0xa70>
 ffffffffc0205046:	c48fb0ef          	jal	ra,ffffffffc020048e <__panic>
@@ -10112,7 +10112,7 @@ ffffffffc020504a:	00002697          	auipc	a3,0x2
 ffffffffc020504e:	3ee68693          	addi	a3,a3,1006 # ffffffffc0207438 <default_pmm_manager+0xe08>
 ffffffffc0205052:	00001617          	auipc	a2,0x1
 ffffffffc0205056:	22e60613          	addi	a2,a2,558 # ffffffffc0206280 <commands+0x868>
-ffffffffc020505a:	41d00593          	li	a1,1053
+ffffffffc020505a:	42b00593          	li	a1,1067
 ffffffffc020505e:	00002517          	auipc	a0,0x2
 ffffffffc0205062:	04250513          	addi	a0,a0,66 # ffffffffc02070a0 <default_pmm_manager+0xa70>
 ffffffffc0205066:	c28fb0ef          	jal	ra,ffffffffc020048e <__panic>
@@ -10482,12 +10482,12 @@ ffffffffc020526c:	7340                	ld	s0,160(a4)
 syscall(void) {
 ffffffffc020526e:	e486                	sd	ra,72(sp)
     uint64_t arg[5];
-    int num = tf->gpr.a0;
-    if (num >= 0 && num < NUM_SYSCALLS) {
+    int num = tf->gpr.a0;  //a0寄存器保存了系统调用编号
+    if (num >= 0 && num < NUM_SYSCALLS) {  //防止syscalls[num]下标越界
 ffffffffc0205270:	47fd                	li	a5,31
-    int num = tf->gpr.a0;
+    int num = tf->gpr.a0;  //a0寄存器保存了系统调用编号
 ffffffffc0205272:	05042903          	lw	s2,80(s0)
-    if (num >= 0 && num < NUM_SYSCALLS) {
+    if (num >= 0 && num < NUM_SYSCALLS) {  //防止syscalls[num]下标越界
 ffffffffc0205276:	0327ee63          	bltu	a5,s2,ffffffffc02052b2 <syscall+0x58>
         if (syscalls[num] != NULL) {
 ffffffffc020527a:	00391713          	slli	a4,s2,0x3
@@ -10519,8 +10519,8 @@ ffffffffc020529e:	f43a                	sd	a4,40(sp)
             tf->gpr.a0 = syscalls[num](arg);
 ffffffffc02052a0:	0028                	addi	a0,sp,8
 ffffffffc02052a2:	9782                	jalr	a5
-        }
     }
+    //如果执行到这里，说明传入的系统调用编号还没有被实现，就崩掉了。
     print_trapframe(tf);
     panic("undefined syscall %d, pid = %d, name = %s.\n",
             num, current->pid, current->name);
@@ -10543,7 +10543,7 @@ ffffffffc02052ba:	86ca                	mv	a3,s2
 ffffffffc02052bc:	00002617          	auipc	a2,0x2
 ffffffffc02052c0:	22460613          	addi	a2,a2,548 # ffffffffc02074e0 <default_pmm_manager+0xeb0>
 ffffffffc02052c4:	43d8                	lw	a4,4(a5)
-ffffffffc02052c6:	06200593          	li	a1,98
+ffffffffc02052c6:	06600593          	li	a1,102
 ffffffffc02052ca:	0b478793          	addi	a5,a5,180
 ffffffffc02052ce:	00002517          	auipc	a0,0x2
 ffffffffc02052d2:	24250513          	addi	a0,a0,578 # ffffffffc0207510 <default_pmm_manager+0xee0>

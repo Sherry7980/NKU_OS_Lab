@@ -92,6 +92,6 @@ trapframe at 0xffffffffc04b0d80
   cause    0x0000000f
 all user-mode processes have quit.
 init check memory pass.
-kernel panic at kern/process/proc.c:554:
+kernel panic at kern/process/proc.c:555:
     initproc exit.
 

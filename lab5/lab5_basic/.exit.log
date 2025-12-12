@@ -52,7 +52,7 @@ Breakpoint
 I am the parent. Forking the child...
 I am parent, fork a child pid 3
 I am the parent, waiting now..
-I am the child.Instruction page fault
+I am the chInstruction page fault
 trapframe at 0xffffffffc04bdee0
   zero     0x00000000
   ra       0x0000000a
@@ -65,7 +65,7 @@ trapframe at 0xffffffffc04bdee0
   s0       0x7fffffc0
   s1       0x00000000
   a0       0x00000000
-  a1       0x0000002e
+  a1       0x00000068
   a2       0x008009f0
   a3       0x7fffff98
   a4       0x00000000
@@ -94,6 +94,6 @@ user panic at user/exit.c:27:
     assertion failed: waitpid(pid, &code) == 0 && code == magic
 all user-mode processes have quit.
 init check memory pass.
-kernel panic at kern/process/proc.c:554:
+kernel panic at kern/process/proc.c:555:
     initproc exit.
 

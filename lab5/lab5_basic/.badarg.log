@@ -50,48 +50,9 @@ check_vmm() succeeded.
 kernel_execve: pid = 2, name = "badarg".
 Breakpoint
 fork ok.
-Instruction page fault
-trapframe at 0xffffffffc04bcee0
-  zero     0x00000000
-  ra       0x00000000
-  sp       0x7ffffef0
-  gp       0x00000000
-  tp       0x00000000
-  t0       0x00000000
-  t1       0x7fffff98
-  t2       0x00000000
-  s0       0x00000000
-  s1       0x7fffff74
-  a0       0x00000000
-  a1       0x0000000a
-  a2       0x008009a0
-  a3       0x7fffff98
-  a4       0x00000000
-  a5       0x00000001
-  a6       0x00000000
-  a7       0x00000000
-  s2       0x00800068
-  s3       0x00000025
-  s4       0x7fffff98
-  s5       0x008006bc
-  s6       0xffffffff
-  s7       0x008008d8
-  s8       0x00000000
-  s9       0x00000000
-  s10      0x008009a0
-  s11      0x00000000
-  t3       0x008009a0
-  t4       0x00000000
-  t5       0x00000000
-  t6       0x00000000
-  status   0x00046020
-  epc      0x00000000
-  tval 0x00000000
-  cause    0x0000000c
-user panic at user/badarg.c:18:
-    assertion failed: waitpid(pid, &exit_code) == 0 && exit_code == 0xbeaf
+badarg pass.
 all user-mode processes have quit.
 init check memory pass.
-kernel panic at kern/process/proc.c:554:
+kernel panic at kern/process/proc.c:555:
     initproc exit.
 

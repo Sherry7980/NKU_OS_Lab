@@ -93,11 +93,11 @@ static inline int
 syscall(int64_t num, ...) {
   800076:	7175                	addi	sp,sp,-144
   800078:	f8ba                	sd	a4,112(sp)
-    va_list ap;
-    va_start(ap, num);
+    va_list ap;             //ap: 参数列表(此时未初始化)
+    va_start(ap, num);      //初始化参数列表, 从num开始
     uint64_t a[MAX_ARGS];
     int i, ret;
-    for (i = 0; i < MAX_ARGS; i ++) {
+    for (i = 0; i < MAX_ARGS; i ++) {  //把参数依次取出
         a[i] = va_arg(ap, uint64_t);
   80007a:	e0ba                	sd	a4,64(sp)
   80007c:	0118                	addi	a4,sp,128
@@ -127,10 +127,10 @@ syscall(int64_t num, ...) {
   8000a0:	67a6                	ld	a5,72(sp)
   8000a2:	00000073          	ecall
   8000a6:	00a13e23          	sd	a0,28(sp)
-        "sd a0, %0"
-        : "=m" (ret)
         : "m"(num), "m"(a[0]), "m"(a[1]), "m"(a[2]), "m"(a[3]), "m"(a[4])
         :"memory");
+    //num存到a0寄存器， a[0]存到a1寄存器
+    //ecall的返回值存到ret
     return ret;
 }
   8000aa:	4572                	lw	a0,28(sp)
