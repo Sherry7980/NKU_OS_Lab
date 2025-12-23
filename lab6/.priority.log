@@ -58,16 +58,16 @@ set priority to 4
 set priority to 5
 100 ticks
 100 ticks
-child pid 7, acc 540000, time 2010
-child pid 3, acc 604000, time 2020
-child pid 4, acc 576000, time 2030
-child pid 5, acc 616000, time 2040
-child pid 6, acc 584000, time 2050
-main: pid 0, acc 604000, time 2060
-main: pid 4, acc 576000, time 2070
-main: pid 5, acc 616000, time 2080
-main: pid 6, acc 584000, time 2090
-main: pid 7, acc 540000, time 2100
+child pid 7, acc 544000, time 2010
+child pid 3, acc 584000, time 2030
+child pid 4, acc 584000, time 2040
+child pid 5, acc 612000, time 2050
+child pid 6, acc 608000, time 2060
+main: pid 0, acc 584000, time 2070
+main: pid 4, acc 584000, time 2080
+main: pid 5, acc 612000, time 2090
+main: pid 6, acc 608000, time 2100
+main: pid 7, acc 544000, time 2110
 main: wait pids over
 sched result: 1 1 1 1 1
 all user-mode processes have quit.
