@@ -52,7 +52,7 @@ Breakpoint
 I am the parent. Forking the child...
 I am parent, fork a child pid 3
 I am the parent, waiting now..
-I am the chInstruction page fault
+I am theInstruction page fault
 trapframe at 0xffffffffc04bdee0
   zero     0x00000000
   ra       0x0000000a
@@ -65,7 +65,7 @@ trapframe at 0xffffffffc04bdee0
   s0       0x7fffffc0
   s1       0x00000000
   a0       0x00000000
-  a1       0x00000068
+  a1       0x00000065
   a2       0x008009f0
   a3       0x7fffff98
   a4       0x00000000

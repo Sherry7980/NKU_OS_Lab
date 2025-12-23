@@ -89,29 +89,27 @@ alloc_proc(void)
     struct proc_struct *proc = kmalloc(sizeof(struct proc_struct));
     if (proc != NULL)
     {
-        // LAB4:填写你在lab4中实现的代码
-        /*
-         * below fields in proc_struct need to be initialized
-         *       enum proc_state state;                      // Process state
-         *       int pid;                                    // Process ID
-         *       int runs;                                   // the running times of Proces
-         *       uintptr_t kstack;                           // Process kernel stack
-         *       volatile bool need_resched;                 // bool value: need to be rescheduled to release CPU?
-         *       struct proc_struct *parent;                 // the parent process
-         *       struct mm_struct *mm;                       // Process's memory management field
-         *       struct context context;                     // Switch here to run process
-         *       struct trapframe *tf;                       // Trap frame for current interrupt
-         *       uintptr_t pgdir;                            // the base addr of Page Directroy Table(PDT)
-         *       uint32_t flags;                             // Process flag
-         *       char name[PROC_NAME_LEN + 1];               // Process name
-         */
-
-        // LAB5:填写你在lab5中实现的代码 (update LAB4 steps)
-        /*
-         * below fields(add in LAB5) in proc_struct need to be initialized
-         *       uint32_t wait_state;                        // waiting state
-         *       struct proc_struct *cptr, *yptr, *optr;     // relations between processes
-         */
+        // LAB4原有
+        proc->state = PROC_UNINIT;                  // 初始化进程状态为未初始化
+        proc->pid = -1;                             // 初始化进程ID为-1（无效ID），后续通过get_id()来分配有效pid
+        proc->runs = 0;                             // 初始化运行次数为0
+        proc->kstack = 0;                           // 初始化内核栈为0（空指针），后续通过setup_kstack()为进程分配实际的内核栈空间
+        proc->need_resched = 0;                     // 初始化不需要重新调度
+        proc->parent = NULL;                        // 初始化父进程指针为NULL
+        proc->mm = NULL;                            // 初始化内存管理结构指针为NULL
+        memset(&(proc->context), 0, sizeof(struct context)); // 初始化上下文结构体，全部设为0，为后续保存现场做准备
+        proc->tf = NULL;                            // 初始化陷阱帧为NULL
+        proc->pgdir = boot_pgdir_pa;                // 初始化页目录表基址为boot_pgdir_pa
+        proc->flags = 0;                            // 初始化进程标志为0
+        memset(proc->name, 0, PROC_NAME_LEN + 1);   // 初始化进程名称数组全部清零，后续通过set_proc_name()设置具体的进程名称
+        list_init(&(proc->list_link));
+        list_init(&(proc->hash_link));
+     
+        // LAB5新增     
+        proc->wait_state = 0;      // 设置进程的等待状态为0，表示进程当前不在等待状态
+        proc->cptr = NULL;         // 初始化子进程指针为NULL
+        proc->optr = NULL;         // 初始化较年长兄弟进程(older sibling pointer)指针为NULL
+        proc->yptr = NULL;         // 初始化较年轻兄弟进程(younger sibling pointer)指针为NULL
 
         // LAB6:YOUR CODE (update LAB5 steps)
         /*
@@ -123,6 +121,14 @@ alloc_proc(void)
          *       uint32_t lab6_stride;                       // stride value (lab6 stride)
          *       uint32_t lab6_priority;                     // priority value (lab6 stride)
          */
+        proc->rq = NULL;                    // 初始化运行队列指针为NULL
+        list_init(&(proc->run_link));       // 初始化运行队列链表节点
+        proc->time_slice = 0;               // 初始化时间片为0，后续由调度器设置
+        proc->lab6_run_pool.left = NULL;    // 初始化斜堆的左子树指针
+        proc->lab6_run_pool.right = NULL;   // 初始化斜堆的右子树指针
+        proc->lab6_run_pool.parent = NULL;  // 初始化斜堆的父节点指针
+        proc->lab6_stride = 0;              // 初始化stride值为0
+        proc->lab6_priority = 1;            // 初始化优先级为1（最小的优先级值，确保所有进程都有默认优先级）
     }
     return proc;
 }
@@ -227,7 +233,7 @@ void proc_run(struct proc_struct *proc)
 {
     if (proc != current)
     {
-        // LAB4:填写你在lab4中实现的代码
+        // LAB4:EXERCISE3 YOUR CODE
         /*
          * Some Useful MACROs, Functions and DEFINEs, you can use them in below implementation.
          * MACROs or Functions:
@@ -236,6 +242,29 @@ void proc_run(struct proc_struct *proc)
          *   lsatp():                   Modify the value of satp register
          *   switch_to():              Context switching between two processes
          */
+        /* 关闭本地中断，并保存当前中断标志状态 */
+        unsigned long irq_flags;
+        local_intr_save(irq_flags);
+
+        /* 保存原来的当前进程指针，将 current 切换为目标进程 */
+        struct proc_struct *prev = current;
+        current = proc;
+
+        /* 记录该进程被调度运行的次数（用于统计或调度算法） */
+        current->runs++;
+
+        /* 切换页表，加载新进程的地址空间 */
+        lsatp(current->pgdir);
+
+        /*
+         * 进行上下文切换：
+         * 保存 prev 的寄存器上下文，恢复 current 的寄存器上下文。
+         * 当 CPU 再次切换回 prev 时，switch_to 函数会从这里继续执行。
+         */
+        switch_to(&prev->context, &current->context);
+
+        /* 恢复之前保存的中断标志状态 */
+        local_intr_restore(irq_flags);
     }
 }
 
@@ -419,7 +448,7 @@ int do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf)
         goto fork_out;
     }
     ret = -E_NO_MEM;
-    // LAB4:填写你在lab4中实现的代码
+    // LAB4:EXERCISE2 YOUR CODE
     /*
      * Some Useful MACROs, Functions and DEFINEs, you can use them in below implementation.
      * MACROs or Functions:
@@ -445,13 +474,56 @@ int do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf)
     //    6. call wakeup_proc to make the new child process RUNNABLE
     //    7. set ret vaule using child proc's pid
 
-    // LAB5:填写你在lab5中实现的代码 (update LAB4 steps)
+    // LAB5 YOUR CODE : (update LAB4 steps)
+    // TIPS: you should modify your written code in lab4(step1 and step5), not add more code.
     /* Some Functions
      *    set_links:  set the relation links of process.  ALSO SEE: remove_links:  lean the relation links of process
      *    -------------------
      *    update step 1: set child proc's parent to current process, make sure current process's wait_state is 0
      *    update step 5: insert proc_struct into hash_list && proc_list, set the relation links of process
      */
+    // 1) 分配进程控制块
+    if ((proc = alloc_proc()) == NULL) {
+        goto fork_out;
+    }
+    
+    // LAB5: 设置父进程，并确保父进程的 wait_state 为 
+    proc->parent = current;
+    // 确保当前进程的等待状态为0（不在等待子进程）
+    // assert(current->wait_state == 0);  // 可选的断言检查
+
+    // 2) 分配子进程的内核栈
+    if (setup_kstack(proc) != 0) {
+        goto bad_fork_cleanup_proc;
+    }
+
+    // 3) 复制/共享内存管理信息
+    if (copy_mm(clone_flags, proc) != 0) {
+        goto bad_fork_cleanup_kstack;
+    }
+
+    // 4) 复制上下文（含 trapframe），并设置返回路径
+    copy_thread(proc, stack, tf);
+
+    // 5) 分配唯一 pid
+    bool intr_flag;
+    local_intr_save(intr_flag);  // 关中断，保证原子性
+    {
+        proc->pid = get_pid();
+        
+        // 挂到哈希表，便于 O(1) 按 pid 查找
+        hash_proc(proc);
+        
+        // LAB5: 使用 set_links 建立进程关系并插入链表
+        set_links(proc);
+    }
+    local_intr_restore(intr_flag);  // 恢复中断
+
+    // 6) 唤醒子进程，使其可调度（会把 state 置为 PROC_RUNNABLE）
+    wakeup_proc(proc);
+
+    // 7) 父进程得到子进程的 pid 作为返回值
+    ret = proc->pid;
 
 fork_out:
     return ret;
@@ -668,7 +740,7 @@ load_icode(unsigned char *binary, size_t size)
     assert(pgdir_alloc_page(mm->pgdir, USTACKTOP - 3 * PGSIZE, PTE_USER) != NULL);
     assert(pgdir_alloc_page(mm->pgdir, USTACKTOP - 4 * PGSIZE, PTE_USER) != NULL);
 
-    //(5) set current process's mm, sr3, and set CR3 reg = physical addr of Page Directory
+    //(5) set current process's mm, sr3, and set satp reg = physical addr of Page Directory
     mm_count_inc(mm);
     current->mm = mm;
     current->pgdir = PADDR(mm->pgdir);
@@ -679,16 +751,26 @@ load_icode(unsigned char *binary, size_t size)
     // Keep sstatus
     uintptr_t sstatus = tf->status;
     memset(tf, 0, sizeof(struct trapframe));
-    /* LAB5:填写你在lab5中实现的代码
-     * should set tf_cs,tf_ds,tf_es,tf_ss,tf_esp,tf_eip,tf_eflags
+    /* LAB5:EXERCISE1 YOUR CODE
+     * should set tf->gpr.sp, tf->epc, tf->status
      * NOTICE: If we set trapframe correctly, then the user level process can return to USER MODE from kernel. So
-     *          tf_cs should be USER_CS segment (see memlayout.h)
-     *          tf_ds=tf_es=tf_ss should be USER_DS segment
-     *          tf_esp should be the top addr of user stack (USTACKTOP)
-     *          tf_eip should be the entry point of this binary program (elf->e_entry)
-     *          tf_eflags should be set to enable computer to produce Interrupt
+     *          tf->gpr.sp should be user stack top (the value of sp)
+     *          tf->epc should be entry point of user program (the value of sepc)
+     *          tf->status should be appropriate for user program (the value of sstatus)
+     *          hint: check meaning of SPP, SPIE in SSTATUS, use them by SSTATUS_SPP, SSTATUS_SPIE(defined in risv.h)
      */
+    /* set user stack pointer */
+    tf->gpr.sp = (uintptr_t)USTACKTOP;
 
+    /* set program entry point (sepc) */
+    tf->epc = (uintptr_t)elf->e_entry;
+
+    /* set return value for exec in user mode (argc = 0) */
+    tf->gpr.a0 = 0;  // 把 SSTATUS_SPP 设置为0，使得 sret 的时候能回到 U mode
+
+    /* Adjust sstatus: clear SPP (so sret goes to user-mode), set SPIE (enable interrupts after sret) */
+    tf->status = (sstatus & ~SSTATUS_SPP) | SSTATUS_SPIE;
+    
     ret = 0;
 out:
     return ret;

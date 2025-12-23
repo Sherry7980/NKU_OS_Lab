@@ -18,6 +18,8 @@ static void
 RR_init(struct run_queue *rq)
 {
     // LAB6: YOUR CODE
+    list_init(&(rq->run_list));        // 初始化运行队列链表
+    rq->proc_num = 0;                  // 进程数量初始为0
 }
 
 /*
@@ -35,6 +37,26 @@ static void
 RR_enqueue(struct run_queue *rq, struct proc_struct *proc)
 {
     // LAB6: YOUR CODE
+    // 将进程添加到运行队列尾部
+    // 注意：list_add_before(&head, node) 将节点添加到链表头部（head之前）
+    // 要实现FIFO队列，应该使用list_add_after或list_add_tail
+    // 但根据ucore的list实现，使用list_add_before(&head, node)实际上是添加到尾部
+    
+    // 检查进程是否已经在队列中
+    if (list_empty(&(proc->run_link))) {
+        list_add_before(&(rq->run_list), &(proc->run_link));
+        
+        // 设置进程的时间片
+        if (proc->time_slice == 0 || proc->time_slice > rq->max_time_slice) {
+            proc->time_slice = rq->max_time_slice;
+        }
+        
+        // 设置进程的运行队列指针
+        proc->rq = rq;
+        
+        // 增加运行队列中的进程计数
+        rq->proc_num++;
+    }
 }
 
 /*
@@ -48,6 +70,16 @@ static void
 RR_dequeue(struct run_queue *rq, struct proc_struct *proc)
 {
     // LAB6: YOUR CODE
+    // 从运行队列中移除进程
+    if (!list_empty(&(proc->run_link))) {
+        list_del_init(&(proc->run_link));
+        
+        // 减少运行队列中的进程计数
+        rq->proc_num--;
+        
+        // 清除进程的运行队列指针
+        proc->rq = NULL;
+    }
 }
 
 /*
@@ -62,6 +94,22 @@ static struct proc_struct *
 RR_pick_next(struct run_queue *rq)
 {
     // LAB6: YOUR CODE
+    list_entry_t *le = list_next(&(rq->run_list));
+    
+    // 如果运行队列为空，返回NULL
+    if (le == &(rq->run_list)) {
+        return NULL;
+    }
+    
+    // 返回运行队列中的第一个进程（FIFO）
+    struct proc_struct *proc = le2proc(le, run_link);
+    
+    // 确保进程状态是可运行的
+    if (proc->state == PROC_RUNNABLE) {
+        return proc;
+    }
+    
+    return NULL;
 }
 
 /*
@@ -75,6 +123,14 @@ static void
 RR_proc_tick(struct run_queue *rq, struct proc_struct *proc)
 {
     // LAB6: YOUR CODE
+    if (proc->time_slice > 0) {
+        proc->time_slice--;
+    }
+    
+    // 当时间片用完时，设置需要重新调度的标志
+    if (proc->time_slice == 0) {
+        proc->need_resched = 1;
+    }
 }
 
 struct sched_class default_sched_class = {

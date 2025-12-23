@@ -49,7 +49,7 @@ check_vmm() succeeded.
 ++ setup timer interrupts
 kernel_execve: pid = 2, name = "forktest".
 Breakpoint
-I am child 31Instruction page fault
+I am chilInstruction page fault
 trapframe at 0xffffffffc0633ee0
   zero     0x00000000
   ra       0x00000000
@@ -60,25 +60,25 @@ trapframe at 0xffffffffc0633ee0
   t1       0x7fffff98
   t2       0x00000000
   s0       0x00000000
-  s1       0x00000000
+  s1       0x7fffff74
   a0       0x00000000
-  a1       0x00000031
-  a2       0x00000003
-  a3       0x0000000a
-  a4       0xfffffffe
+  a1       0x0000006c
+  a2       0x00800960
+  a3       0x7fffff98
+  a4       0x00000000
   a5       0x00000001
-  a6       0x0000000a
+  a6       0x00000000
   a7       0x00000000
-  s2       0x00000000
-  s3       0x00000000
-  s4       0x00000000
+  s2       0x00800068
+  s3       0x00000025
+  s4       0x7fffff98
   s5       0x0080067c
   s6       0xffffffff
   s7       0x00800898
-  s8       0xffffffff
-  s9       0x7fffffa0
-  s10      0x0080096d
-  s11      0xffffffff
+  s8       0x00000000
+  s9       0x00000000
+  s10      0x00800960
+  s11      0x00000000
   t3       0x00800960
   t4       0x00000000
   t5       0x00000000

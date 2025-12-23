@@ -51,7 +51,44 @@ kernel_execve: pid = 2, name = "spin".
 Breakpoint
 I am the parent. Forking the child...
 I am the parent. Running the child...
-I am the child. spinning ...
+I am the child. spinInstruction page fault
+trapframe at 0xffffffffc04bcee0
+  zero     0x00000000
+  ra       0x0000000a
+  sp       0x7fffff80
+  gp       0x00000000
+  tp       0x00000000
+  t0       0x00000000
+  t1       0x7fffffa8
+  t2       0x00000000
+  s0       0x7fffffd0
+  s1       0x00000000
+  a0       0x00000000
+  a1       0x0000006e
+  a2       0x008009b8
+  a3       0x7fffffa8
+  a4       0x00000000
+  a5       0x00000001
+  a6       0x00000000
+  a7       0x00000000
+  s2       0x00000000
+  s3       0x00000002
+  s4       0x00000000
+  s5       0x00000000
+  s6       0x00000000
+  s7       0x00000000
+  s8       0x00000000
+  s9       0x00000000
+  s10      0x00000000
+  s11      0x00000000
+  t3       0x008009b8
+  t4       0x00000000
+  t5       0x00000000
+  t6       0x00000000
+  status   0x00046020
+  epc      0x0000000a
+  tval 0x0000000a
+  cause    0x0000000c
 I am the parent.  Killing the child...
 kill returns 0
 wait returns 0
