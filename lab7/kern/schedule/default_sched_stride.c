@@ -8,7 +8,7 @@
 
 /* You should define the BigStride constant here*/
 /* LAB6: 填写你在lab6中实现的代码 */
-#define BIG_STRIDE (1 << 30)  /* you should give a value, and is ??? */
+#define BIG_STRIDE 0x7fffffff  /* you should give a value, and is ??? */
 
 /* The compare function for two skew_heap_node_t's and the
  * corresponding procs*/
@@ -41,7 +41,9 @@ stride_init(struct run_queue *rq) {
       * (2) init the run pool: rq->lab6_run_pool
       * (3) set number of process: rq->proc_num to 0       
       */
-    
+     list_init(&(rq->run_list));
+     rq->lab6_run_pool = NULL;
+     rq->proc_num = 0;
 }
 
 /*
@@ -68,7 +70,31 @@ stride_enqueue(struct run_queue *rq, struct proc_struct *proc) {
       * (3) set proc->rq pointer to rq
       * (4) increase rq->proc_num
       */
-    
+#if USE_SKEW_HEAP
+     rq->lab6_run_pool = skew_heap_insert(rq->lab6_run_pool, &(proc->lab6_run_pool), proc_stride_comp_f);
+#else
+     list_entry_t *le = list_next(&(rq->run_list));
+     while (le != &(rq->run_list))
+     {
+          struct proc_struct *p = le2proc(le, run_link);
+          if ((int32_t)(proc->lab6_stride - p->lab6_stride) <= 0)
+          {
+               break;
+          }
+          le = list_next(le);
+     }
+     list_add_before(le, &(proc->run_link));
+#endif
+     if (proc->time_slice == 0 || proc->time_slice > rq->max_time_slice)
+     {
+          proc->time_slice = rq->max_time_slice;
+     }
+     if (proc->lab6_priority == 0)
+     {
+          proc->lab6_priority = 1;
+     }
+     proc->rq = rq;
+     rq->proc_num++;
 }
 
 /*
@@ -87,8 +113,18 @@ stride_dequeue(struct run_queue *rq, struct proc_struct *proc) {
       *         skew_heap_remove: remove a entry from skew_heap
       *         list_del_init: remove a entry from the  list
       */
-    
+#if USE_SKEW_HEAP
+     rq->lab6_run_pool = skew_heap_remove(rq->lab6_run_pool, &(proc->lab6_run_pool), proc_stride_comp_f);
+#else
+     if (!list_empty(&(proc->run_link)))
+     {
+          list_del_init(&(proc->run_link));
+     }
+#endif
+     proc->rq = NULL;
+     rq->proc_num--;
 }
+
 /*
  * stride_pick_next pick the element from the ``run-queue'', with the
  * minimum value of stride, and returns the corresponding process
@@ -111,7 +147,38 @@ stride_pick_next(struct run_queue *rq) {
       * (2) update p;s stride value: p->lab6_stride
       * (3) return p
       */
-    
+     if (rq->proc_num == 0)
+     {
+          return NULL;
+     }
+#if USE_SKEW_HEAP
+     if (rq->lab6_run_pool == NULL)
+     {
+          return NULL;
+     }
+     struct proc_struct *p = le2proc(rq->lab6_run_pool, lab6_run_pool);
+#else
+     list_entry_t *le = list_next(&(rq->run_list));
+     struct proc_struct *p = NULL;
+     while (le != &(rq->run_list))
+     {
+          struct proc_struct *q = le2proc(le, run_link);
+          if (p == NULL || (int32_t)(q->lab6_stride - p->lab6_stride) < 0)
+          {
+               p = q;
+          }
+          le = list_next(le);
+     }
+#endif
+     if (p != NULL)
+     {
+          if (p->lab6_priority == 0)
+          {
+               p->lab6_priority = 1;
+          }
+          p->lab6_stride += BIG_STRIDE / p->lab6_priority;
+     }
+     return p;
 }
 
 /*
@@ -125,7 +192,14 @@ stride_pick_next(struct run_queue *rq) {
 static void
 stride_proc_tick(struct run_queue *rq, struct proc_struct *proc) {
      /* LAB6: 填写你在lab6中实现的代码 */
-    
+     if (proc->time_slice > 0)
+     {
+          proc->time_slice--;
+     }
+     if (proc->time_slice == 0)
+     {
+          proc->need_resched = 1;
+     }
 }
 
 struct sched_class stride_sched_class = {

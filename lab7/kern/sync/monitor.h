@@ -1,3 +1,4 @@
+// monitor.c/monitor.h：实现管程高级同步机制，封装条件变量
 #ifndef __KERN_SYNC_MONITOR_CONDVAR_H__
 #define __KERN_SYNC_MOINTOR_CONDVAR_H__
 
@@ -64,29 +65,29 @@
  *     }
  */
 
-typedef struct monitor monitor_t;
+typedef struct monitor monitor_t;                // 前向声明monitor_t结构体
 
-typedef struct condvar{
-    semaphore_t sem;        // the sem semaphore  is used to down the waiting proc, and the signaling proc should up the waiting proc
-    int count;              // the number of waiters on condvar
-    monitor_t * owner;      // the owner(monitor) of this condvar
-} condvar_t;
+typedef struct condvar{                           // 条件变量结构体定义
+    semaphore_t sem;                              // 信号量：用于阻塞等待进程，信号进程应唤醒等待进程
+    int count;                                    // 计数器：在该条件变量上等待的进程数量
+    monitor_t * owner;                            // 指针：指向拥有此条件变量的管程
+} condvar_t;                                      // 条件变量类型
 
-typedef struct monitor{
-    semaphore_t mutex;      // the mutex lock for going into the routines in monitor, should be initialized to 1
-    semaphore_t next;       // the next semaphore is used to down the signaling proc itself, and the other OR wakeuped waiting proc should wake up the sleeped signaling proc.
-    int next_count;         // the number of of sleeped signaling proc
-    condvar_t *cv;          // the condvars in monitor
-} monitor_t;
+typedef struct monitor{                           // 管程结构体定义
+    semaphore_t mutex;                            // 互斥信号量：用于进入管程例程，应初始化为1
+    semaphore_t next;                             // next信号量：用于阻塞信号进程自身，被唤醒的等待进程应唤醒睡眠的信号进程
+    int next_count;                               // 计数器：在next上睡眠的信号进程数量
+    condvar_t *cv;                                // 指针：指向管程中的条件变量数组
+} monitor_t;                                      // 管程类型
 
-// Initialize variables in monitor.
+// 初始化管程中的变量
 void     monitor_init (monitor_t *cvp, size_t num_cv);
-// Free variables in monitor.
+// 释放管程中的变量
 void     monitor_free (monitor_t *cvp, size_t num_cv);
-// Unlock one of threads waiting on the condition variable.
+// 解锁条件变量上等待的一个线程
 void     cond_signal (condvar_t *cvp);
-// Suspend calling thread on a condition variable waiting for condition atomically unlock mutex in monitor,
-// and suspends calling thread on conditional variable after waking up locks mutex.
+// 将调用线程挂起在条件变量上等待条件，原子地解锁管程中的mutex，
+// 并在唤醒后锁住mutex，将调用线程挂起在条件变量上
 void     cond_wait (condvar_t *cvp);
      
 #endif /* !__KERN_SYNC_MONITOR_CONDVAR_H__ */

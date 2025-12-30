@@ -1,23 +1,24 @@
+// wait.c/wait.h：等待队列数据结构定义
 #ifndef __KERN_SYNC_WAIT_H__
 #define __KERN_SYNC_WAIT_H__
 
 #include <list.h>
 
 typedef struct {
-    list_entry_t wait_head;
+    list_entry_t wait_head;   // 双向链表头
 } wait_queue_t;
 
 struct proc_struct;
 
 typedef struct {
-    struct proc_struct *proc;
-    uint32_t wakeup_flags;
-    wait_queue_t *wait_queue;
-    list_entry_t wait_link;
+    struct proc_struct *proc;  // 等待的进程
+    uint32_t wakeup_flags;     // 唤醒标志（记录进程被唤醒的原因）
+    wait_queue_t *wait_queue;  // 所属等待队列
+    list_entry_t wait_link;    // 链表链接
 } wait_t;
 
 #define le2wait(le, member)         \
-    to_struct((le), wait_t, member)
+    to_struct((le), wait_t, member)   // 这个宏通过链表节点地址反推出包含它的 wait_t 结构体地址
 
 void wait_init(wait_t *wait, struct proc_struct *proc);
 void wait_queue_init(wait_queue_t *queue);
